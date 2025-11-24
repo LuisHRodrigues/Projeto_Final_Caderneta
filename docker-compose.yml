@@ -1,17 +1,36 @@
-version: "3.8"
-
 services:
-  # 1. Serviço de Backend (Spring Boot)
+  # 1. Serviço MySQL
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: admin123
+      MYSQL_DATABASE: api_caderneta_database
+    ports:
+      - "3306:3306"
+    networks:
+      - minha-rede
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # 2. Serviço de Backend (Spring Boot)
   backend:
-    build: ./backend-folder # Caminho para a pasta do projeto Spring Boot com o Dockerfile
+    build: ./backend-repo # Caminho para a pasta do projeto Spring Boot com o Dockerfile
     ports:
       - "8080:8080" # Mapeia porta do host (esquerda) para a porta do container (direita)
+    depends_on:
+      mysql:
+        condition: service_healthy
     networks:
       - minha-rede # Conecta à rede interna
+    restart: on-failure
 
-  # 2. Serviço de Frontend
+  # 3. Serviço de Frontend
   frontend:
-    build: ./frontend-folder # Caminho para a pasta do seu projeto frontend com o Dockerfile
+    build: ./frontend-repo # Caminho para a pasta do seu projeto frontend com o Dockerfile
     ports:
       - "3000:80" # Mapeia porta do host (3000) para a porta interna do NGINX/Frontend (80)
     depends_on:
@@ -22,3 +41,6 @@ services:
 networks:
   minha-rede: # Define a rede virtual
     driver: bridge
+
+volumes:
+  mysql_data:
