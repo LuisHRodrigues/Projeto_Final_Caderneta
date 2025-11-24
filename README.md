@@ -51,41 +51,59 @@ Abra `frontend-repo/index.html` diretamente no navegador
 
 ## 📋 Funcionalidades
 
-### ✅ Implementadas
+### ✅ Implementadas e Integradas
+
+- **Dashboard**
+  - ✅ Métricas em tempo real do banco de dados
+  - ✅ Vendas recentes dinâmicas
+  - ✅ Clientes em atraso automático
+  - ✅ Cards com dados calculados
 
 - **Clientes**
-  - ✅ Cadastro, edição e visualização
-  - ✅ Controle de limite de crédito
+  - ✅ CRUD completo integrado com API
+  - ✅ Cadastro com validação de campos obrigatórios
+  - ✅ Edição de dados e limite de crédito
+  - ✅ Visualização detalhada com situação financeira
   - ✅ Gestão de fiadores
-  - ✅ Busca e filtros
+  - ✅ Busca e filtros em tempo real
 
 - **Vendas**
-  - ✅ Registro de vendas a prazo
-  - ✅ Múltiplos itens por venda
+  - ✅ Registro de vendas com múltiplos itens
+  - ✅ Seleção dinâmica de clientes do banco
+  - ✅ Cálculo automático de valores
   - ✅ Controle de status (Pendente/Pago/Cancelado)
-
-- **Dívidas**
-  - ✅ Controle automático de dívidas
-  - ✅ Registro de pagamentos
-  - ✅ Histórico de transações
-
-- **Relatórios**
-  - ✅ Relatório de vendas
-  - ✅ Relatório de dívidas
+  - ✅ Visualização e edição de vendas
   - ✅ Filtros por período e status
 
+- **Dívidas**
+  - ✅ Geração automática a partir de vendas
+  - ✅ Controle de status e vencimentos
+  - ✅ Registro de pagamentos
+  - ✅ Histórico completo de transações
+  - ✅ Cálculo de saldos pendentes
+
+- **Relatórios**
+  - ✅ Relatório de vendas com dados reais
+  - ✅ Relatório de dívidas por período
+  - ✅ Filtros dinâmicos por data e tipo
+  - ✅ Exportação CSV funcional
+  - ✅ Métricas calculadas automaticamente
+
 - **Notificações**
-  - ✅ Alertas de vencimento
-  - ✅ Notificações de pagamento
+  - ✅ Sistema de notificações do banco
+  - ✅ Filtros por tipo e status
+  - ✅ Marcar como lida integrado
+  - ✅ Timeline de eventos
 
-### 🔄 Integração Frontend-Backend
+### 🔄 Integração Frontend-Backend Completa
 
-- ✅ Serviço de API (`api-service.js`)
-- ✅ Gerenciador de clientes (`clientes.js`)
-- ✅ Gerenciador de vendas (`vendas.js`)
-- ✅ Configuração CORS
-- ✅ Tratamento de erros
-- ✅ Loading states
+- ✅ **API Service** (`api-service.js`) - Centralização de todas as chamadas
+- ✅ **Gerenciadores específicos** - Clientes, Vendas, Dashboard, Relatórios, Notificações
+- ✅ **CORS configurado** - Comunicação entre containers Docker
+- ✅ **Tratamento de erros** - Mensagens amigáveis e logs detalhados
+- ✅ **Loading states** - Indicadores visuais de carregamento
+- ✅ **Validação** - Client-side e server-side
+- ✅ **Dados dinâmicos** - Todas as páginas consomem dados reais
 
 ## 🛠️ Estrutura do Projeto
 
@@ -118,67 +136,187 @@ Projeto_Final_Caderneta/
 ## 🔗 Endpoints da API
 
 ### Clientes
-- `GET /api/clientes` - Listar clientes
-- `POST /api/clientes` - Criar cliente
-- `GET /api/clientes/{id}` - Buscar cliente
-- `PUT /api/clientes/{id}` - Atualizar cliente
+- `GET /api/clientes` - Listar todos os clientes
+- `POST /api/clientes` - Criar novo cliente
+- `GET /api/clientes/{id}` - Buscar cliente por ID
+- `PUT /api/clientes/{id}` - Atualizar dados do cliente
 - `DELETE /api/clientes/{id}` - Excluir cliente
-- `PATCH /api/clientes/{id}/limite-credito` - Atualizar limite
-- `PATCH /api/clientes/{id}/prazo-pagamento` - Atualizar prazo
+- `PATCH /api/clientes/{id}/limite-credito` - Atualizar limite de crédito
+- `PATCH /api/clientes/{id}/prazo-pagamento` - Atualizar prazo de pagamento
 
 ### Vendas
-- `GET /api/vendas` - Listar vendas
-- `POST /api/vendas` - Criar venda
-- `GET /api/vendas/{id}` - Buscar venda
+- `GET /api/vendas` - Listar todas as vendas
+- `POST /api/vendas` - Registrar nova venda
+- `GET /api/vendas/{id}` - Buscar venda por ID
 - `PUT /api/vendas/{id}` - Atualizar venda
 - `DELETE /api/vendas/{id}` - Excluir venda
 
 ### Dívidas
-- `GET /api/dividas` - Listar dívidas
-- `GET /api/dividas/{id}` - Buscar dívida
+- `GET /api/dividas` - Listar todas as dívidas
+- `GET /api/dividas/{id}` - Buscar dívida por ID
+- `GET /api/dividas/cliente/{clienteId}` - Listar dívidas de um cliente
 - `POST /api/dividas/{id}/pagamentos` - Registrar pagamento
+- `PUT /api/dividas/{id}` - Atualizar dívida
+- `DELETE /api/dividas/{id}` - Excluir dívida
+
+### Funcionários
+- `GET /api/funcionarios` - Listar funcionários
+- `POST /api/funcionarios` - Criar funcionário
+- `GET /api/funcionarios/{id}` - Buscar funcionário
+- `PUT /api/funcionarios/{id}` - Atualizar funcionário
+- `DELETE /api/funcionarios/{id}` - Excluir funcionário
+
+### Fiadores
+- `GET /api/fiadores` - Listar fiadores
+- `POST /api/fiadores` - Criar fiador
+
+### Notificações
+- `GET /api/notificacoes` - Listar notificações
+- `POST /api/notificacoes` - Criar notificação
+- `PATCH /api/notificacoes/{id}/marcar-lida` - Marcar como lida
 
 ### Relatórios
-- `GET /api/relatorios/vendas` - Relatório de vendas
-- `GET /api/relatorios/dividas` - Relatório de dívidas
+- `GET /api/relatorios/vendas-a-prazo` - Relatório de vendas (com filtros de data)
+- `GET /api/relatorios/debitos-pendentes` - Relatório de dívidas (com filtros)
 
-## 🎯 Próximos Passos
+### Proprietário
+- `GET /api/proprietario` - Dados do proprietário
+- `PUT /api/proprietario` - Atualizar dados do proprietário
 
-1. **Completar integração das demais páginas**
-   - Relatórios dinâmicos
-   - Notificações em tempo real
-   - Dashboard com métricas
+## 🎯 Status do Projeto
 
-2. **Melhorias de UX**
-   - Paginação
-   - Ordenação de tabelas
-   - Filtros avançados
+### 🚧 **EM DESENVOLVIMENTO - Funcionalidades Principais Implementadas**
 
-3. **Funcionalidades avançadas**
+Status atual do desenvolvimento:
+
+- ✅ **Backend API** - Endpoints REST implementados
+- ✅ **CRUD Clientes** - Totalmente funcional e integrado
+- ✅ **Dashboard** - Métricas básicas do banco de dados
+- ⚠️ **Vendas** - Listagem funcional, edição em desenvolvimento
+- ⚠️ **Dívidas** - CRUD básico, refinamentos necessários
+- ⚠️ **Relatórios** - Estrutura criada, dados parcialmente integrados
+- ❌ **Notificações** - Interface criada, integração pendente
+- ✅ **Docker** - Sistema containerizado
+- ✅ **CORS** - Comunicação frontend-backend configurada
+
+### 🎯 **Próximas Implementações**
+
+**Prioridade Alta:**
+1. **Corrigir bugs nas vendas**
+   - Valores NaN nos detalhes
+   - Descrição undefined
+   - Edição de vendas
+
+2. **Integrar notificações**
+   - Conectar com API backend
+   - Filtros funcionais
+   - Marcar como lida
+
+3. **Finalizar relatórios**
+   - Dados reais do banco
+   - Filtros por data
+   - Exportação CSV
+
+**Melhorias Futuras:**
+
+1. **UX Avançado**
+   - Paginação nas listagens
+   - Ordenação de colunas
+   - Filtros mais granulares
+   - Modo escuro
+
+2. **Funcionalidades Extras**
    - Backup automático
-   - Exportação de relatórios
-   - Sistema de permissões
+   - Relatórios em PDF
+   - Sistema de permissões por usuário
+   - Notificações por email/SMS
+   - Dashboard com gráficos avançados
+
+3. **Performance**
+   - Cache de dados
+   - Lazy loading
+   - Otimização de consultas
 
 ## 🐛 Solução de Problemas
 
-### Backend não inicia
-- Verifique se o MySQL está rodando
-- Confirme as credenciais no `application.yml`
-- Execute `mvn clean install` novamente
+### Sistema não inicia
+```bash
+# Verificar status dos containers
+docker-compose ps
+
+# Ver logs de erro
+docker-compose logs backend
+docker-compose logs frontend
+docker-compose logs mysql
+
+# Restart completo
+docker-compose down
+docker-compose up -d --build
+```
 
 ### Frontend não carrega dados
-- Verifique se o backend está rodando na porta 8080
-- Abra o console do navegador para ver erros
-- Confirme a configuração CORS
+1. **Verificar se backend está respondendo:**
+   - Acesse: `http://localhost:8080/api/clientes`
+   - Deve retornar JSON com lista de clientes
 
-### Erro de CORS
-- Verifique se a configuração `CorsConfig.java` está correta
-- Confirme se o frontend está rodando na porta permitida (3000)
+2. **Verificar console do navegador (F12):**
+   - Procure por erros de CORS ou Failed to fetch
+   - Verifique se as requisições estão sendo feitas para a porta correta
+
+3. **Testar conectividade:**
+   - Acesse: `http://localhost:3000/test-api.html`
+   - Clique em "Testar Backend"
+
+### Erro 404 em endpoints
+- Verifique se o backend foi reiniciado após mudanças
+- Confirme se os controllers estão com as anotações corretas
+- Execute: `docker-compose restart backend`
+
+### Erro 405 (Method Not Allowed)
+- Endpoint existe mas método HTTP não implementado
+- Verifique se todos os métodos CRUD estão no controller
+
+### Problemas de CORS
+- Configuração está em `CorsConfig.java`
+- Permite requisições de `localhost:3000`
+- Se necessário, adicione outras origens
+
+## 🔧 **Status de Desenvolvimento**
+
+**Funcionalidades Completas:**
+- ✅ **Gestão de Clientes** - CRUD completo com fiadores e limites
+- ✅ **Dashboard** - Métricas básicas e vendas recentes
+- ✅ **Infraestrutura** - Docker, CORS, API base
+
+**Em Desenvolvimento:**
+- ⚠️ **Vendas** - Listagem OK, edição e detalhes com bugs
+- ⚠️ **Relatórios** - Estrutura criada, dados parcialmente integrados
+- ⚠️ **Dívidas** - Funcionalidade básica, refinamentos necessários
+
+**Pendente:**
+- ❌ **Notificações** - Integração com backend
+- ❌ **Validações avançadas** - Campos obrigatórios e formatos
+- ❌ **Tratamento de erros** - Mensagens específicas por contexto
 
 ## 📞 Suporte
 
-Para dúvidas ou problemas, verifique:
-1. Logs do backend no console
-2. Console do navegador (F12)
-3. Documentação da API no Swagger
-4. Este README para configurações
+### Verificações Básicas
+1. **Logs do sistema:** `docker-compose logs`
+2. **Console do navegador:** F12 → Console
+3. **API direta:** `http://localhost:8080/api/clientes`
+4. **Documentação:** `http://localhost:8080/swagger-ui.html`
+
+### Comandos Úteis
+```bash
+# Status dos serviços
+docker-compose ps
+
+# Restart específico
+docker-compose restart backend
+
+# Rebuild completo
+docker-compose down && docker-compose up -d --build
+
+# Ver logs em tempo real
+docker-compose logs -f backend
+```
