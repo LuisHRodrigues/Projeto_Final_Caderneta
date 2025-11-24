@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  # 1. Serviço de Backend (Spring Boot)
+  backend:
+    build: ./backend-folder # Caminho para a pasta do projeto Spring Boot com o Dockerfile
+    ports:
+      - "8080:8080" # Mapeia porta do host (esquerda) para a porta do container (direita)
+    networks:
+      - minha-rede # Conecta à rede interna
+
+  # 2. Serviço de Frontend
+  frontend:
+    build: ./frontend-folder # Caminho para a pasta do seu projeto frontend com o Dockerfile
+    ports:
+      - "3000:80" # Mapeia porta do host (3000) para a porta interna do NGINX/Frontend (80)
+    depends_on:
+      - backend # Garante que o backend tente iniciar antes
+    networks:
+      - minha-rede
+
+networks:
+  minha-rede: # Define a rede virtual
+    driver: bridge
