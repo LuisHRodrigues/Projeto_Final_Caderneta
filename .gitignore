@@ -1,0 +1,29 @@
+# Docker
+docker-compose.yml
+.env
+
+# Backend (Java/Maven)
+backend-repo/target/
+backend-repo/.mvn/
+backend-repo/mvnw
+backend-repo/mvnw.cmd
+*.jar
+*.war
+*.class
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

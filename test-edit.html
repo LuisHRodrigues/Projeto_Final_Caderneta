@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Edição de Vendas</title>
+</head>
+<body>
+    <h1>Teste de Edição de Vendas</h1>
+    <button onclick="testarEdicao()">Testar Edição</button>
+    <div id="resultado"></div>
+
+    <script>
+        const apiService = {
+            baseURL: 'http://localhost:8080/api',
+            async request(endpoint, options = {}) {
+                const url = `${this.baseURL}${endpoint}`;
+                const config = {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    ...options
+                };
+
+                try {
+                    const response = await fetch(url, config);
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    if (response.status === 204) {
+                        return null;
+                    }
+
+                    return await response.json();
+                } catch (error) {
+                    console.error(`Erro na requisição para ${endpoint}:`, error);
+                    throw error;
+                }
+            },
+
+            async getVendas() {
+                return await this.request('/vendas');
+            },
+
+            async getVendaById(id) {
+                return await this.request(`/vendas/${id}`);
+            },
+
+            async updateVenda(id, vendaData) {
+                return await this.request(`/vendas/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(vendaData)
+                });
+            }
+        };
+
+        async function testarEdicao() {
+            const resultado = document.getElementById('resultado');
+            
+            try {
+                // 1. Buscar todas as vendas
+                console.log('1. Buscando vendas...');
+                const vendas = await apiService.getVendas();
+                console.log('Vendas encontradas:', vendas);
+                
+                if (vendas.length === 0) {
+                    resultado.innerHTML = '<p style="color: red;">Nenhuma venda encontrada para testar</p>';
+                    return;
+                }
+                
+                // 2. Pegar a primeira venda
+                const primeiraVenda = vendas[0];
+                console.log('2. Venda selecionada:', primeiraVenda);
+                
+                // 3. Buscar detalhes da venda
+                console.log('3. Buscando detalhes da venda...');
+                const vendaDetalhes = await apiService.getVendaById(primeiraVenda.id);
+                console.log('Detalhes da venda:', vendaDetalhes);
+                
+                // 4. Tentar atualizar a venda
+                console.log('4. Atualizando venda...');
+                const dadosAtualizacao = {
+                    clienteId: vendaDetalhes.clienteId,
+                    valorTotal: vendaDetalhes.valorTotal + 10, // Adicionar R$ 10
+                    funcionarioId: vendaDetalhes.funcionarioId || 1
+                };
+                
+                console.log('Dados para atualização:', dadosAtualizacao);
+                const vendaAtualizada = await apiService.updateVenda(primeiraVenda.id, dadosAtualizacao);
+                console.log('Venda atualizada:', vendaAtualizada);
+                
+                resultado.innerHTML = `
+                    <div style="color: green;">
+                        <h3>Teste realizado com sucesso!</h3>
+                        <p><strong>Venda ID:</strong> ${primeiraVenda.id}</p>
+                        <p><strong>Valor original:</strong> R$ ${vendaDetalhes.valorTotal}</p>
+                        <p><strong>Valor atualizado:</strong> R$ ${vendaAtualizada.valorTotal}</p>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Erro no teste:', error);
+                resultado.innerHTML = `<p style="color: red;">Erro: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

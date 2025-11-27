@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste API Direto</title>
+</head>
+<body>
+    <h1>Teste API Direto</h1>
+    <button onclick="testarAPI()">Testar Update</button>
+    <div id="resultado"></div>
+
+    <script>
+        async function testarAPI() {
+            const resultado = document.getElementById('resultado');
+            
+            try {
+                // 1. Buscar vendas
+                const response1 = await fetch('http://localhost:8080/api/vendas');
+                const vendas = await response1.json();
+                console.log('Vendas:', vendas);
+                
+                if (vendas.length === 0) {
+                    resultado.innerHTML = 'Nenhuma venda encontrada';
+                    return;
+                }
+                
+                const venda = vendas[0];
+                console.log('Venda selecionada:', venda);
+                
+                // 2. Tentar atualizar
+                const dadosUpdate = {
+                    clienteId: venda.clienteId,
+                    funcionarioId: venda.funcionarioId || 1,
+                    valorTotal: (venda.valorTotal || 100) + 50
+                };
+                
+                console.log('Dados para update:', dadosUpdate);
+                
+                const response2 = await fetch(`http://localhost:8080/api/vendas/${venda.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dadosUpdate)
+                });
+                
+                console.log('Response status:', response2.status);
+                console.log('Response headers:', response2.headers);
+                
+                const resultadoUpdate = await response2.json();
+                console.log('Resultado update:', resultadoUpdate);
+                
+                resultado.innerHTML = `
+                    <p>Status: ${response2.status}</p>
+                    <p>Valor original: ${venda.valorTotal}</p>
+                    <p>Valor atualizado: ${resultadoUpdate.valorTotal}</p>
+                    <pre>${JSON.stringify(resultadoUpdate, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                resultado.innerHTML = `Erro: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
