@@ -1,5 +1,4 @@
 # Docker
-docker-compose.yml
 .env
 
 # Backend (Java/Maven)
