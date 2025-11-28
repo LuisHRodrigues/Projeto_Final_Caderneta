@@ -94,6 +94,7 @@ Abra `frontend-repo/index.html` diretamente no navegador
   - ✅ Filtros por tipo e status
   - ✅ Marcar como lida integrado
   - ✅ Timeline de eventos
+  - ✅ Notificações em tempo real (cliente criado, venda criada, pagamento recebido)
 
 ### 🔄 Integração Frontend-Backend Completa
 
@@ -193,9 +194,10 @@ Status atual do desenvolvimento:
 - ✅ **CRUD Clientes** - Totalmente funcional e integrado
 - ✅ **Dashboard** - Métricas básicas do banco de dados
 - ⚠️ **Vendas** - Listagem funcional, edição em desenvolvimento
-- ⚠️ **Dívidas** - CRUD básico, refinamentos necessários
-- ⚠️ **Relatórios** - Estrutura criada, dados parcialmente integrados
-- ❌ **Notificações** - Interface criada, integração pendente
+- ✅ **Dívidas** - CRUD funcional, cálculos corrigidos
+- ✅ **Relatórios** - Dados reais integrados, cálculos corretos
+- ✅ **Notificações** - Integração completa com eventos em tempo real
+- ✅ **Notificações** - Interface criada, integração completa com eventos em tempo real
 - ✅ **Docker** - Sistema containerizado
 - ✅ **CORS** - Comunicação frontend-backend configurada
 
@@ -207,15 +209,25 @@ Status atual do desenvolvimento:
    - Descrição undefined
    - Edição de vendas
 
-2. **Integrar notificações**
-   - Conectar com API backend
-   - Filtros funcionais
-   - Marcar como lida
+2. **Melhorias nas notificações**
+   - Persistência de notificações no backend
+   - Notificações por email/SMS
+   - Agendamento de notificações
 
-3. **Finalizar relatórios**
-   - Dados reais do banco
-   - Filtros por data
-   - Exportação CSV
+### ✅ **Correções Recentes**
+
+1. **Cálculo de Valores Pendentes**
+   - ✅ Corrigido cálculo no relatório de dívidas
+   - ✅ Corrigido card de "Fiados Pendentes" no dashboard
+   - ✅ Agora usa `valorPendente` do backend (cálculo correto)
+   - ✅ Valores zerados quando todas as dívidas são pagas
+
+2. **Integração de Notificações em Tempo Real**
+   - ✅ Notificações ao criar novo cliente
+   - ✅ Notificações ao registrar nova venda
+   - ✅ Notificações ao receber pagamento
+   - ✅ Badge de notificações não lidas atualiza automaticamente
+   - ✅ Eventos disparados em tempo real entre páginas
 
 **Melhorias Futuras:**
 
