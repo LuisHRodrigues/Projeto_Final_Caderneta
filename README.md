@@ -306,7 +306,6 @@ docker-compose up -d --build
 - ⚠️ **Dívidas** - Funcionalidade básica, refinamentos necessários
 
 **Pendente:**
-- ❌ **Notificações** - Integração em tempo real
 - ❌ **Validações avançadas** - Campos obrigatórios e formatos
 - ❌ **Tratamento de erros** - Mensagens específicas por contexto
 
