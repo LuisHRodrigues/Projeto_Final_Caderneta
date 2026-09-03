@@ -1,12 +1,49 @@
 # Sistema de Caderneta - Vendas a Prazo
 
-Sistema completo para gerenciamento de vendas a prazo com controle de clientes, dívidas e relatórios.
+Sistema completo para gerenciamento de vendas a prazo ("fiado"), com controle de
+clientes, dívidas, pagamentos, notificações e relatórios gerenciais.
+
+Este repositório é o **projeto integrador (guarda-chuva)**: reúne o backend e o
+frontend como **submódulos Git** e orquestra tudo via Docker Compose.
+
+## 🧩 Repositórios (submódulos)
+
+| Submódulo        | Caminho          | Repositório                                         | Stack                         |
+|------------------|------------------|----------------------------------------------------|-------------------------------|
+| Backend (API)    | `backend-repo/`  | https://github.com/EduardoBR2003/api-caderneta     | Spring Boot 3 / Java 21 / MySQL |
+| Frontend (Web)   | `frontend-repo/` | https://github.com/Artur-Duarte17/Caderneta        | HTML / CSS / JS (Vanilla) + NGINX |
+
+### Clonar o projeto com os submódulos
+
+```bash
+git clone --recurse-submodules <url-deste-repo>
+# ou, se já clonou sem os submódulos:
+git submodule update --init --recursive
+```
+
+### Atualizar os submódulos para a última versão das branches remotas
+
+```bash
+git submodule update --remote --merge
+```
 
 ## 🏗️ Arquitetura
 
-- **Backend**: Spring Boot (Java) com MySQL
-- **Frontend**: HTML, CSS, JavaScript (Vanilla)
-- **API**: RESTful com documentação Swagger
+```
+┌────────────┐      HTTP/JSON      ┌──────────────┐      JDBC      ┌──────────┐
+│  Frontend  │  ───────────────▶   │   Backend    │  ──────────▶   │  MySQL   │
+│  NGINX :80 │   localhost:8080    │ Spring Boot  │   mysql:3306   │   8.0    │
+│  (host 3000)│                    │    :8080     │                │(host 3307)│
+└────────────┘                     └──────────────┘                └──────────┘
+```
+
+- **Backend**: Spring Boot 3 (Java 21), Spring Web, Spring Data JPA, Flyway,
+  Bean Validation, ModelMapper, MySQL Connector, springdoc-openapi (Swagger UI).
+- **Frontend**: HTML + CSS + JavaScript puro, servido por NGINX. Toda a
+  comunicação com a API é centralizada em `js/api-service.js`.
+- **Banco**: MySQL 8.0. Schema versionado com migrations Flyway
+  (`src/main/resources/db/migration`) e `hibernate.ddl-auto=update`.
+- **Documentação da API**: Swagger UI em `http://localhost:8080/swagger-ui.html`.
 
 ## 🚀 Como Executar
 
@@ -15,319 +52,202 @@ Sistema completo para gerenciamento de vendas a prazo com controle de clientes, 
 - Docker
 - Docker Compose
 
-### Executar com Docker (Recomendado)
+### Executar com Docker (recomendado)
 
 ```bash
-docker-compose up -d
+docker-compose up -d --build
 ```
 
 **Acessos:**
-- Frontend: `http://localhost:3000`
-- Backend: `http://localhost:8080`
-- Swagger: `http://localhost:8080/swagger-ui.html`
 
-### Executar Manualmente (Desenvolvimento)
+| Serviço   | URL                                            |
+|-----------|------------------------------------------------|
+| Frontend  | http://localhost:3000                          |
+| Backend   | http://localhost:8080                          |
+| Swagger   | http://localhost:8080/swagger-ui.html          |
+| MySQL     | `localhost:3307` (user `root` / senha `admin123`) |
 
-**Pré-requisitos adicionais:**
-- Java 17+
-- Maven 3.6+
-- MySQL 8.0+
+Serviços definidos em [`docker-compose.yml`](docker-compose.yml):
+`mysql` → `backend` (aguarda o healthcheck do MySQL) → `frontend`.
 
-**1. Configurar Banco:**
-```sql
-CREATE DATABASE api_caderneta_database;
-CREATE USER 'root'@'localhost' IDENTIFIED BY 'admin123';
-GRANT ALL PRIVILEGES ON api_caderneta_database.* TO 'root'@'localhost';
-```
+### Executar manualmente (desenvolvimento)
 
-**2. Backend:**
-```bash
-cd backend-repo
-mvn spring-boot:run
-```
+**Pré-requisitos adicionais:** Java 21+, Maven 3.6+, MySQL 8.0+.
 
-**3. Frontend:**
-Abra `frontend-repo/index.html` diretamente no navegador
+1. **Banco** — crie o database e ajuste as credenciais em
+   `backend-repo/src/main/resources/application.yml`
+   (por padrão espera o host `mysql`; para rodar local, troque para `localhost:3306`
+   ou `localhost:3307`):
+
+   ```sql
+   CREATE DATABASE api_caderneta_database;
+   ```
+
+2. **Backend:**
+
+   ```bash
+   cd backend-repo
+   mvn spring-boot:run
+   ```
+
+   O Flyway aplica as migrations automaticamente na inicialização.
+
+3. **Frontend:** sirva a pasta `frontend-repo/` com qualquer servidor estático
+   (ex.: `npx serve frontend-repo`) ou abra `frontend-repo/index.html` no
+   navegador. A API é consumida em `http://localhost:8080/api`.
 
 ## 📋 Funcionalidades
 
-### ✅ Implementadas e Integradas
+### Frontend (páginas)
 
-- **Dashboard**
-  - ✅ Métricas em tempo real do banco de dados
-  - ✅ Vendas recentes dinâmicas
-  - ✅ Clientes em atraso automático
-  - ✅ Cards com dados calculados
+| Página        | Arquivo                       | Descrição |
+|---------------|-------------------------------|-----------|
+| Visão Geral   | `index.html`                  | Dashboard com métricas, vendas recentes e clientes em atraso |
+| Clientes      | `Paginas/clientes.html`       | CRUD de clientes, limite de crédito, prazo de pagamento e fiadores |
+| Vendas        | `Paginas/vendas.html`         | Registro de vendas com múltiplos itens, edição e filtros |
+| Pagamentos    | `Paginas/pagamentos.html`     | Gestão de cobranças e registro de pagamentos de dívidas |
+| Relatórios    | `Paginas/relatorios.html`     | Relatórios de vendas a prazo, débitos pendentes e pagamentos, com exportação CSV |
+| Notificações  | `Paginas/notificacoes.html`   | Timeline de eventos, filtros e marcação como lida |
 
-- **Clientes**
-  - ✅ CRUD completo integrado com API
-  - ✅ Cadastro com validação de campos obrigatórios
-  - ✅ Edição de dados e limite de crédito
-  - ✅ Visualização detalhada com situação financeira
-  - ✅ Gestão de fiadores
-  - ✅ Busca e filtros em tempo real
+Scripts em `frontend-repo/js/`: `api-service.js` (integração com a API),
+`app.js` (utilidades gerais), `dashboard.js`, `clientes.js`, `vendas.js`,
+`pagamentos.js`, `relatorios.js`, `notificacoes.js`, `notificacoes-global.js`.
 
-- **Vendas**
-  - ✅ Registro de vendas com múltiplos itens
-  - ✅ Seleção dinâmica de clientes do banco
-  - ✅ Cálculo automático de valores
-  - ✅ Controle de status (Pendente/Pago/Cancelado)
-  - ✅ Visualização e edição de vendas
-  - ✅ Filtros por período e status
+### Backend (domínio)
 
-- **Dívidas**
-  - ✅ Geração automática a partir de vendas
-  - ✅ Controle de status e vencimentos
-  - ✅ Registro de pagamentos
-  - ✅ Histórico completo de transações
-  - ✅ Cálculo de saldos pendentes
+Entidades JPA: `Pessoa` (base), `Cliente`, `Funcionario`, `Proprietario`,
+`Fiador`, `Venda`, `ItemVenda`, `Divida`, `Pagamento`, `Notificacao`.
 
-- **Relatórios**
-  - ✅ Relatório de vendas com dados reais
-  - ✅ Relatório de dívidas por período
-  - ✅ Filtros dinâmicos por data e tipo
-  - ✅ Exportação CSV funcional
-  - ✅ Métricas calculadas automaticamente
+Enums: `StatusDivida` (ABERTA, PAGA_PARCIALMENTE, PAGA_TOTALMENTE, VENCIDA),
+`MetodoPagamento` (DINHEIRO, CARTAO_CREDITO, CARTAO_DEBITO, PIX, BOLETO_BANCARIO),
+`TipoNotificacao` (LEMBRETE_PAGAMENTO, AVISO_DIVIDA_VENCIDA, CONFIRMACAO_COMPRA,
+CONFIRMACAO_PAGAMENTO, CADASTRO_CLIENTE, PAGAMENTO_RECEBIDO, COMPRA_REALIZADA).
 
-- **Notificações**
-  - ✅ Sistema de notificações do banco
-  - ✅ Filtros por tipo e status
-  - ✅ Marcar como lida integrado
-  - ✅ Timeline de eventos
-  - ✅ Notificações em tempo real (cliente criado, venda criada, pagamento recebido)
+Regras de negócio: geração automática de dívida a partir da venda, cálculo de
+`valorPendente`, atualização de status da dívida ao registrar pagamentos e
+disparo de notificações em eventos (cadastro de cliente, venda, pagamento).
 
-### 🔄 Integração Frontend-Backend Completa
-
-- ✅ **API Service** (`api-service.js`) - Centralização de todas as chamadas
-- ✅ **Gerenciadores específicos** - Clientes, Vendas, Dashboard, Relatórios, Notificações
-- ✅ **CORS configurado** - Comunicação entre containers Docker
-- ✅ **Tratamento de erros** - Mensagens amigáveis e logs detalhados
-- ✅ **Loading states** - Indicadores visuais de carregamento
-- ✅ **Validação** - Client-side e server-side
-- ✅ **Dados dinâmicos** - Todas as páginas consomem dados reais
-
-## 🛠️ Estrutura do Projeto
+## 🛠️ Estrutura do projeto
 
 ```
 Projeto_Final_Caderneta/
-├── backend-repo/           # API Spring Boot
-│   ├── src/main/java/
-│   │   └── br/com/api_caderneta/
-│   │       ├── controller/     # Controllers REST
-│   │       ├── service/        # Lógica de negócio
-│   │       ├── repository/     # Acesso a dados
-│   │       ├── model/          # Entidades JPA
-│   │       ├── dto/            # Data Transfer Objects
-│   │       └── config/         # Configurações
-│   └── src/main/resources/
-│       ├── application.yml     # Configurações da aplicação
-│       └── db/migration/       # Scripts Flyway
-├── frontend-repo/          # Interface web
-│   ├── js/
-│   │   ├── app.js             # Funcionalidades gerais
-│   │   ├── api-service.js     # Integração com API
-│   │   ├── clientes.js        # Gerenciamento de clientes
-│   │   └── vendas.js          # Gerenciamento de vendas
-│   ├── Paginas/               # Páginas HTML
-│   ├── components/            # Componentes reutilizáveis
-│   └── Dockerfile             # Container do frontend
-└── docker-compose.yml     # Orquestração Docker
+├── docker-compose.yml         # Orquestração (mysql + backend + frontend)
+├── .gitmodules                # Definição dos submódulos
+├── backend-repo/              # Submódulo: API Spring Boot
+│   ├── Dockerfile             # Build multi-stage (Maven → JRE 21 Alpine)
+│   ├── pom.xml
+│   └── src/main/
+│       ├── java/br/com/api_caderneta/
+│       │   ├── config/            # CorsConfig, ModelMapperConfig, OpenApiConfig
+│       │   ├── controller/        # Controllers REST
+│       │   ├── services/          # Lógica de negócio
+│       │   ├── repository/        # Spring Data JPA
+│       │   ├── model/             # Entidades + enums
+│       │   ├── dto/               # Request/Response DTOs
+│       │   ├── mapper/            # DataMapper (ModelMapper)
+│       │   └── exceptions/        # Exceções e handler global
+│       └── resources/
+│           ├── application.yml
+│           └── db/migration/      # V1..V4 (Flyway)
+└── frontend-repo/             # Submódulo: interface web
+    ├── Dockerfile             # NGINX Alpine
+    ├── nginx.conf
+    ├── index.html
+    ├── theme.css
+    ├── js/                    # Lógica das páginas + api-service.js
+    ├── Paginas/               # Páginas HTML internas
+    ├── components/            # Sidebar, topbar, breadcrumb (parciais)
+    └── Documentação/          # Termo de abertura, casos de uso
 ```
 
 ## 🔗 Endpoints da API
 
-### Clientes
-- `GET /api/clientes` - Listar todos os clientes
-- `POST /api/clientes` - Criar novo cliente
-- `GET /api/clientes/{id}` - Buscar cliente por ID
-- `PUT /api/clientes/{id}` - Atualizar dados do cliente
-- `DELETE /api/clientes/{id}` - Excluir cliente
-- `PATCH /api/clientes/{id}/limite-credito` - Atualizar limite de crédito
-- `PATCH /api/clientes/{id}/prazo-pagamento` - Atualizar prazo de pagamento
+Base: `http://localhost:8080`
 
-### Vendas
-- `GET /api/vendas` - Listar todas as vendas
-- `POST /api/vendas` - Registrar nova venda
-- `GET /api/vendas/{id}` - Buscar venda por ID
-- `PUT /api/vendas/{id}` - Atualizar venda
-- `DELETE /api/vendas/{id}` - Excluir venda
+### Clientes — `/api/clientes`
+- `GET /` · `POST /` · `GET /{id}` · `PUT /{id}` · `DELETE /{id}`
+- `PATCH /{id}/limite-credito`
+- `PATCH /{id}/prazo-pagamento`
 
-### Dívidas
-- `GET /api/dividas` - Listar todas as dívidas
-- `GET /api/dividas/{id}` - Buscar dívida por ID
-- `GET /api/dividas/cliente/{clienteId}` - Listar dívidas de um cliente
-- `POST /api/dividas/{id}/pagamentos` - Registrar pagamento
-- `PUT /api/dividas/{id}` - Atualizar dívida
-- `DELETE /api/dividas/{id}` - Excluir dívida
+### Vendas — `/api/vendas`
+- `GET /` · `POST /` · `GET /{id}` · `PUT /{id}` · `DELETE /{id}`
 
-### Funcionários
-- `GET /api/funcionarios` - Listar funcionários
-- `POST /api/funcionarios` - Criar funcionário
-- `GET /api/funcionarios/{id}` - Buscar funcionário
-- `PUT /api/funcionarios/{id}` - Atualizar funcionário
-- `DELETE /api/funcionarios/{id}` - Excluir funcionário
+### Dívidas — `/api/dividas`
+- `GET /` · `GET /{id}` · `GET /cliente/{clienteId}`
+- `POST /{dividaId}/pagamentos` — registrar pagamento
+- `PUT /{id}` · `DELETE /{id}`
 
-### Fiadores
-- `GET /api/fiadores` - Listar fiadores
-- `POST /api/fiadores` - Criar fiador
+### Fiadores — `/api/fiadores`
+- `GET /` · `GET /{id}` · `POST /`
+- `POST /associar/cliente/{clienteId}/fiador/{fiadorId}`
 
-### Notificações
-- `GET /api/notificacoes` - Listar notificações
-- `POST /api/notificacoes` - Criar notificação
-- `PATCH /api/notificacoes/{id}/marcar-lida` - Marcar como lida
+### Funcionários — `/api/funcionarios`
+- `GET /` · `POST /` · `GET /{id}` · `PUT /{id}` · `DELETE /{id}`
 
-### Relatórios
-- `GET /api/relatorios/vendas-a-prazo` - Relatório de vendas (com filtros de data)
-- `GET /api/relatorios/debitos-pendentes` - Relatório de dívidas (com filtros)
+### Proprietários — `/api/v1/proprietarios`
+- `GET /` · `POST /` · `GET /{id}` · `PUT /{id}` · `DELETE /{id}`
 
-### Proprietário
-- `GET /api/proprietario` - Dados do proprietário
-- `PUT /api/proprietario` - Atualizar dados do proprietário
+### Notificações — `/api/notificacoes`
+- `GET /` · `GET /cliente/{clienteId}`
+- `POST /manual` — criar notificação manual
+- `PATCH /{id}/marcar-lida`
+- `PATCH /marcar-todas-lidas`
 
-## 🎯 Status do Projeto
+### Relatórios — `/api/relatorios`
+- `GET /vendas-a-prazo?dataInicio=AAAA-MM-DD&dataFim=AAAA-MM-DD`
+- `GET /debitos-pendentes?dataInicio=...&dataFim=...` (filtro opcional por status)
+- `GET /pagamentos?inicio=AAAA-MM-DD&fim=AAAA-MM-DD` — dados para gráficos
 
-### 🚧 **EM DESENVOLVIMENTO - Funcionalidades Principais Implementadas**
+> A referência completa e testável está no Swagger UI.
 
-Status atual do desenvolvimento:
-
-- ✅ **Backend API** - Endpoints REST implementados
-- ✅ **CRUD Clientes** - Totalmente funcional e integrado
-- ✅ **Dashboard** - Métricas básicas do banco de dados
-- ⚠️ **Vendas** - Listagem funcional, edição em desenvolvimento
-- ✅ **Dívidas** - CRUD funcional, cálculos corrigidos
-- ✅ **Relatórios** - Dados reais integrados, cálculos corretos
-- ✅ **Notificações** - Integração completa com eventos em tempo real
-- ✅ **Notificações** - Interface criada, integração completa com eventos em tempo real
-- ✅ **Docker** - Sistema containerizado
-- ✅ **CORS** - Comunicação frontend-backend configurada
-
-### 🎯 **Próximas Implementações**
-
-**Prioridade Alta:**
-1. **Corrigir bugs nas vendas**
-   - Valores NaN nos detalhes
-   - Descrição undefined
-   - Edição de vendas
-
-2. **Melhorias nas notificações**
-   - Persistência de notificações no backend
-   - Notificações por email/SMS
-   - Agendamento de notificações
-
-### ✅ **Correções Recentes**
-
-1. **Cálculo de Valores Pendentes**
-   - ✅ Corrigido cálculo no relatório de dívidas
-   - ✅ Corrigido card de "Fiados Pendentes" no dashboard
-   - ✅ Agora usa `valorPendente` do backend (cálculo correto)
-   - ✅ Valores zerados quando todas as dívidas são pagas
-
-2. **Integração de Notificações em Tempo Real**
-   - ✅ Notificações ao criar novo cliente
-   - ✅ Notificações ao registrar nova venda
-   - ✅ Notificações ao receber pagamento
-   - ✅ Badge de notificações não lidas atualiza automaticamente
-   - ✅ Eventos disparados em tempo real entre páginas
-
-**Melhorias Futuras:**
-
-1. **UX Avançado**
-   - Paginação nas listagens
-   - Ordenação de colunas
-   - Filtros mais granulares
-   - Modo escuro
-
-2. **Funcionalidades Extras**
-   - Backup automático
-   - Relatórios em PDF
-   - Sistema de permissões por usuário
-   - Notificações por email/SMS
-   - Dashboard com gráficos avançados
-
-3. **Performance**
-   - Cache de dados
-   - Lazy loading
-   - Otimização de consultas
-
-## 🐛 Solução de Problemas
+## 🐛 Solução de problemas
 
 ### Sistema não inicia
 ```bash
-# Verificar status dos containers
 docker-compose ps
-
-# Ver logs de erro
 docker-compose logs backend
-docker-compose logs frontend
 docker-compose logs mysql
-
-# Restart completo
-docker-compose down
-docker-compose up -d --build
+docker-compose down && docker-compose up -d --build
 ```
 
 ### Frontend não carrega dados
-1. **Verificar se backend está respondendo:**
-   - Acesse: `http://localhost:8080/api/clientes`
-   - Deve retornar JSON com lista de clientes
+1. Verifique se a API responde: `http://localhost:8080/api/clientes`.
+2. Console do navegador (F12) → procure por erros de CORS ou `Failed to fetch`.
+3. Confirme que as requisições vão para `http://localhost:8080/api`.
 
-2. **Verificar console do navegador (F12):**
-   - Procure por erros de CORS ou Failed to fetch
-   - Verifique se as requisições estão sendo feitas para a porta correta
-
-3. **Testar conectividade:**
-   - Acesse: `http://localhost:3000/test-api.html`
-   - Clique em "Testar Backend"
-
-### Erro 404 em endpoints
-- Verifique se o backend foi reiniciado após mudanças
-- Confirme se os controllers estão com as anotações corretas
-- Execute: `docker-compose restart backend`
-
-### Erro 405 (Method Not Allowed)
-- Endpoint existe mas método HTTP não implementado
-- Verifique se todos os métodos CRUD estão no controller
+### Erros 404 / 405 em endpoints
+- Reinicie o backend após mudanças: `docker-compose restart backend`.
+- Confira o caminho exato na tabela de endpoints acima (ex.: proprietários usa
+  `/api/v1/proprietarios`, notificação manual usa `/api/notificacoes/manual`).
 
 ### Problemas de CORS
-- Configuração está em `CorsConfig.java`
-- Permite requisições de `localhost:3000`
-- Se necessário, adicione outras origens
+- Configuração em `backend-repo/.../config/CorsConfig.java`
+  (libera `http://localhost:3000`). Adicione outras origens se necessário.
 
-## 🔧 **Status de Desenvolvimento**
+### Banco / migrations
+- Migrations ficam em `backend-repo/src/main/resources/db/migration`.
+- `spring.flyway.baseline-on-migrate=true` está habilitado.
+- Para recriar do zero: `docker-compose down -v` (remove o volume `mysql_data`).
 
-**Funcionalidades Completas:**
-- ✅ **Gestão de Clientes** - CRUD completo com fiadores e limites
-- ✅ **Dashboard** - Métricas básicas e vendas recentes
-- ✅ **Infraestrutura** - Docker, CORS, API base
+## 🎯 Status do projeto
 
-**Em Desenvolvimento:**
-- ⚠️ **Vendas** - Listagem OK, edição e detalhes com bugs
-- ⚠️ **Relatórios** - Estrutura criada, dados parcialmente integrados
-- ⚠️ **Dívidas** - Funcionalidade básica, refinamentos necessários
+🚧 **Em desenvolvimento** — funcionalidades principais implementadas e integradas.
 
-**Pendente:**
-- ❌ **Validações avançadas** - Campos obrigatórios e formatos
-- ❌ **Tratamento de erros** - Mensagens específicas por contexto
+| Módulo         | Status |
+|----------------|--------|
+| Backend API    | ✅ Endpoints REST implementados |
+| Clientes       | ✅ CRUD completo (limites, prazos, fiadores) |
+| Dashboard      | ✅ Métricas e vendas recentes |
+| Vendas         | ⚠️ Listagem e registro OK; edição/detalhes em ajuste |
+| Dívidas        | ✅ CRUD e pagamentos; cálculo de `valorPendente` |
+| Pagamentos     | ✅ Registro integrado com atualização de status |
+| Relatórios     | ✅ Vendas, débitos e pagamentos com exportação CSV |
+| Notificações   | ✅ Eventos em tempo real e marcação de leitura |
+| Infra          | ✅ Docker, Flyway, CORS |
 
-## 📞 Suporte
-
-### Verificações Básicas
-1. **Logs do sistema:** `docker-compose logs`
-2. **Console do navegador:** F12 → Console
-3. **API direta:** `http://localhost:8080/api/clientes`
-4. **Documentação:** `http://localhost:8080/swagger-ui.html`
-
-### Comandos Úteis
-```bash
-# Status dos serviços
-docker-compose ps
-
-# Restart específico
-docker-compose restart backend
-
-# Rebuild completo
-docker-compose down && docker-compose up -d --build
-
-# Ver logs em tempo real
-docker-compose logs -f backend
-```
+### Próximas implementações
+- Corrigir bugs remanescentes nas vendas (valores `NaN`, descrição `undefined`).
+- Persistência/agendamento de notificações; envio por e-mail/SMS.
+- Paginação, ordenação e filtros mais granulares nas listagens.
+- Relatórios em PDF e dashboard com gráficos avançados.
+- Autenticação e permissões por usuário.
