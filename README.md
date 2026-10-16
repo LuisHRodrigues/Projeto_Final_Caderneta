@@ -5,7 +5,7 @@ Sistema completo para gerenciamento de vendas a prazo com controle de clientes, 
 ## 🏗️ Arquitetura
 
 - **Backend**: Spring Boot (Java) com MySQL
-- **Frontend**: HTML, CSS, JavaScript (Vanilla)
+- **Frontend**: Flutter Web
 - **API**: RESTful com documentação Swagger
 
 ## 🚀 Como Executar
@@ -47,7 +47,11 @@ mvn spring-boot:run
 ```
 
 **3. Frontend:**
-Abra `frontend-repo/index.html` diretamente no navegador
+```bash
+cd frontend-repo
+flutter pub get
+flutter run -d chrome
+```
 
 ## 📋 Funcionalidades
 
@@ -122,15 +126,13 @@ Projeto_Final_Caderneta/
 │   └── src/main/resources/
 │       ├── application.yml     # Configurações da aplicação
 │       └── db/migration/       # Scripts Flyway
-├── frontend-repo/          # Interface web
-│   ├── js/
-│   │   ├── app.js             # Funcionalidades gerais
-│   │   ├── api-service.js     # Integração com API
-│   │   ├── clientes.js        # Gerenciamento de clientes
-│   │   └── vendas.js          # Gerenciamento de vendas
-│   ├── Paginas/               # Páginas HTML
-│   ├── components/            # Componentes reutilizáveis
-│   └── Dockerfile             # Container do frontend
+├── frontend-repo/          # Interface web (Flutter Web)
+│   ├── lib/
+│   │   ├── core/              # API, modelos, tema, formatação
+│   │   ├── widgets/           # Layout e componentes compartilhados
+│   │   └── pages/             # Telas do sistema
+│   ├── web/                   # index.html e ícones
+│   └── Dockerfile             # Build Flutter + NGINX
 └── docker-compose.yml     # Orquestração Docker
 ```
 
@@ -275,9 +277,9 @@ docker-compose up -d --build
    - Procure por erros de CORS ou Failed to fetch
    - Verifique se as requisições estão sendo feitas para a porta correta
 
-3. **Testar conectividade:**
-   - Acesse: `http://localhost:3000/test-api.html`
-   - Clique em "Testar Backend"
+3. **Endereço do backend:**
+   - O front usa `http://localhost:8080` por padrão
+   - Para outro endereço, faça o build com `--dart-define=API_URL=http://host:porta`
 
 ### Erro 404 em endpoints
 - Verifique se o backend foi reiniciado após mudanças
