@@ -126,7 +126,9 @@ Projeto_Final_Caderneta/
 └── docker-compose.yml     # Orquestração Docker
 ```
 
-## 🔗 Endpoints da API
+Scripts em `frontend-repo/js/`: `api-service.js` (integração com a API),
+`app.js` (utilidades gerais), `dashboard.js`, `clientes.js`, `vendas.js`,
+`pagamentos.js`, `relatorios.js`, `notificacoes.js`, `notificacoes-global.js`.
 
 Base: `http://localhost:8080`
 
@@ -181,22 +183,19 @@ docker-compose down && docker-compose up -d --build
 2. Console do navegador (F12) → procure por erros de CORS ou `Failed to fetch`.
 3. Confirme que as requisições vão para `http://localhost:8080/api`.
 
-2. **Verificar console do navegador (F12):**
-   - Procure por erros de CORS ou Failed to fetch
-   - Verifique se as requisições estão sendo feitas para a porta correta
+Base: `http://localhost:8080`
 
 3. **Endereço do backend:**
    - O front usa `http://localhost:8080` por padrão
    - Para outro endereço, faça o build com `--dart-define=API_URL=http://host:porta`
 
-### Erro 404 em endpoints
-- Verifique se o backend foi reiniciado após mudanças
-- Confirme se os controllers estão com as anotações corretas
-- Execute: `docker-compose restart backend`
+### Vendas — `/api/vendas`
+- `GET /` · `POST /` · `GET /{id}` · `PUT /{id}` · `DELETE /{id}`
 
-### Erro 405 (Method Not Allowed)
-- Endpoint existe mas método HTTP não implementado
-- Verifique se todos os métodos CRUD estão no controller
+### Dívidas — `/api/dividas`
+- `GET /` · `GET /{id}` · `GET /cliente/{clienteId}`
+- `POST /{dividaId}/pagamentos` — registrar pagamento
+- `PUT /{id}` · `DELETE /{id}`
 
 ### Problemas de CORS
 - Configuração em `backend-repo/.../config/CorsConfig.java`
