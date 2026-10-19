@@ -29,21 +29,9 @@ git submodule update --remote --merge
 
 ## 🏗️ Arquitetura
 
-```
-┌────────────┐      HTTP/JSON      ┌──────────────┐      JDBC      ┌──────────┐
-│  Frontend  │  ───────────────▶   │   Backend    │  ──────────▶   │  MySQL   │
-│  NGINX :80 │   localhost:8080    │ Spring Boot  │   mysql:3306   │   8.0    │
-│  (host 3000)│                    │    :8080     │                │(host 3307)│
-└────────────┘                     └──────────────┘                └──────────┘
-```
-
-- **Backend**: Spring Boot 3 (Java 21), Spring Web, Spring Data JPA, Flyway,
-  Bean Validation, ModelMapper, MySQL Connector, springdoc-openapi (Swagger UI).
-- **Frontend**: HTML + CSS + JavaScript puro, servido por NGINX. Toda a
-  comunicação com a API é centralizada em `js/api-service.js`.
-- **Banco**: MySQL 8.0. Schema versionado com migrations Flyway
-  (`src/main/resources/db/migration`) e `hibernate.ddl-auto=update`.
-- **Documentação da API**: Swagger UI em `http://localhost:8080/swagger-ui.html`.
+- **Backend**: Spring Boot (Java) com MySQL
+- **Frontend**: Flutter Web
+- **API**: RESTful com documentação Swagger
 
 ## 🚀 Como Executar
 
@@ -74,27 +62,12 @@ Serviços definidos em [`docker-compose.yml`](docker-compose.yml):
 
 **Pré-requisitos adicionais:** Java 21+, Maven 3.6+, MySQL 8.0+.
 
-1. **Banco** — crie o database e ajuste as credenciais em
-   `backend-repo/src/main/resources/application.yml`
-   (por padrão espera o host `mysql`; para rodar local, troque para `localhost:3306`
-   ou `localhost:3307`):
-
-   ```sql
-   CREATE DATABASE api_caderneta_database;
-   ```
-
-2. **Backend:**
-
-   ```bash
-   cd backend-repo
-   mvn spring-boot:run
-   ```
-
-   O Flyway aplica as migrations automaticamente na inicialização.
-
-3. **Frontend:** sirva a pasta `frontend-repo/` com qualquer servidor estático
-   (ex.: `npx serve frontend-repo`) ou abra `frontend-repo/index.html` no
-   navegador. A API é consumida em `http://localhost:8080/api`.
+**3. Frontend:**
+```bash
+cd frontend-repo
+flutter pub get
+flutter run -d chrome
+```
 
 ## 📋 Funcionalidades
 
@@ -131,36 +104,31 @@ disparo de notificações em eventos (cadastro de cliente, venda, pagamento).
 
 ```
 Projeto_Final_Caderneta/
-├── docker-compose.yml         # Orquestração (mysql + backend + frontend)
-├── .gitmodules                # Definição dos submódulos
-├── backend-repo/              # Submódulo: API Spring Boot
-│   ├── Dockerfile             # Build multi-stage (Maven → JRE 21 Alpine)
-│   ├── pom.xml
-│   └── src/main/
-│       ├── java/br/com/api_caderneta/
-│       │   ├── config/            # CorsConfig, ModelMapperConfig, OpenApiConfig
-│       │   ├── controller/        # Controllers REST
-│       │   ├── services/          # Lógica de negócio
-│       │   ├── repository/        # Spring Data JPA
-│       │   ├── model/             # Entidades + enums
-│       │   ├── dto/               # Request/Response DTOs
-│       │   ├── mapper/            # DataMapper (ModelMapper)
-│       │   └── exceptions/        # Exceções e handler global
-│       └── resources/
-│           ├── application.yml
-│           └── db/migration/      # V1..V4 (Flyway)
-└── frontend-repo/             # Submódulo: interface web
-    ├── Dockerfile             # NGINX Alpine
-    ├── nginx.conf
-    ├── index.html
-    ├── theme.css
-    ├── js/                    # Lógica das páginas + api-service.js
-    ├── Paginas/               # Páginas HTML internas
-    ├── components/            # Sidebar, topbar, breadcrumb (parciais)
-    └── Documentação/          # Termo de abertura, casos de uso
+├── backend-repo/           # API Spring Boot
+│   ├── src/main/java/
+│   │   └── br/com/api_caderneta/
+│   │       ├── controller/     # Controllers REST
+│   │       ├── service/        # Lógica de negócio
+│   │       ├── repository/     # Acesso a dados
+│   │       ├── model/          # Entidades JPA
+│   │       ├── dto/            # Data Transfer Objects
+│   │       └── config/         # Configurações
+│   └── src/main/resources/
+│       ├── application.yml     # Configurações da aplicação
+│       └── db/migration/       # Scripts Flyway
+├── frontend-repo/          # Interface web (Flutter Web)
+│   ├── lib/
+│   │   ├── core/              # API, modelos, tema, formatação
+│   │   ├── widgets/           # Layout e componentes compartilhados
+│   │   └── pages/             # Telas do sistema
+│   ├── web/                   # index.html e ícones
+│   └── Dockerfile             # Build Flutter + NGINX
+└── docker-compose.yml     # Orquestração Docker
 ```
 
-## 🔗 Endpoints da API
+Scripts em `frontend-repo/js/`: `api-service.js` (integração com a API),
+`app.js` (utilidades gerais), `dashboard.js`, `clientes.js`, `vendas.js`,
+`pagamentos.js`, `relatorios.js`, `notificacoes.js`, `notificacoes-global.js`.
 
 Base: `http://localhost:8080`
 
@@ -215,10 +183,19 @@ docker-compose down && docker-compose up -d --build
 2. Console do navegador (F12) → procure por erros de CORS ou `Failed to fetch`.
 3. Confirme que as requisições vão para `http://localhost:8080/api`.
 
-### Erros 404 / 405 em endpoints
-- Reinicie o backend após mudanças: `docker-compose restart backend`.
-- Confira o caminho exato na tabela de endpoints acima (ex.: proprietários usa
-  `/api/v1/proprietarios`, notificação manual usa `/api/notificacoes/manual`).
+Base: `http://localhost:8080`
+
+3. **Endereço do backend:**
+   - O front usa `http://localhost:8080` por padrão
+   - Para outro endereço, faça o build com `--dart-define=API_URL=http://host:porta`
+
+### Vendas — `/api/vendas`
+- `GET /` · `POST /` · `GET /{id}` · `PUT /{id}` · `DELETE /{id}`
+
+### Dívidas — `/api/dividas`
+- `GET /` · `GET /{id}` · `GET /cliente/{clienteId}`
+- `POST /{dividaId}/pagamentos` — registrar pagamento
+- `PUT /{id}` · `DELETE /{id}`
 
 ### Problemas de CORS
 - Configuração em `backend-repo/.../config/CorsConfig.java`
