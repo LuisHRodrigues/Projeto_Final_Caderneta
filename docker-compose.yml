@@ -20,7 +20,7 @@ services:
   backend:
     build: ./backend-repo # Caminho para a pasta do projeto Spring Boot com o Dockerfile
     ports:
-      - "8080:8080" # Mapeia porta do host (esquerda) para a porta do container (direita)
+      - "8082:8080" # Mapeia porta do host (esquerda) para a porta do container (direita)
     depends_on:
       mysql:
         condition: service_healthy
