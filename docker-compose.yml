@@ -3,10 +3,10 @@ services:
   mysql:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: admin123
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-admin123}
       MYSQL_DATABASE: api_caderneta_database
     ports:
-      - "3307:3306"
+      - "127.0.0.1:3307:3306" # só a própria máquina acessa o banco
     networks:
       - minha-rede
     volumes:
@@ -20,7 +20,17 @@ services:
   backend:
     build: ./backend-repo # Caminho para a pasta do projeto Spring Boot com o Dockerfile
     ports:
-      - "8080:8080" # Mapeia porta do host (esquerda) para a porta do container (direita)
+      - "127.0.0.1:8080:8080" # só a própria máquina; o navegador usa /api pelo nginx (porta 3000)
+    environment:
+      # Perfil padrão VAZIO = seguro (cookie Secure, sem fixtures). Para testar em HTTP local, crie um
+      # arquivo .env (ignorado pelo git) com SPRING_PROFILES_ACTIVE=dev,dev-fixtures. Ver .env.example.
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-admin123}
+      # Primeiro gerente (só criado se não houver gerente ativo). Não há senha padrão.
+      CADERNETA_BOOTSTRAP_LOGIN: ${CADERNETA_BOOTSTRAP_LOGIN:-}
+      CADERNETA_BOOTSTRAP_SENHA: ${CADERNETA_BOOTSTRAP_SENHA:-}
+      CADERNETA_BOOTSTRAP_NOME: ${CADERNETA_BOOTSTRAP_NOME:-Gerente}
+      CADERNETA_BOOTSTRAP_CPF: ${CADERNETA_BOOTSTRAP_CPF:-}
     depends_on:
       mysql:
         condition: service_healthy

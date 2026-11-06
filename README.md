@@ -51,8 +51,8 @@ docker-compose up -d --build
 | Serviço   | URL                                            |
 |-----------|------------------------------------------------|
 | Frontend  | http://localhost:3000                          |
-| Backend   | http://localhost:8080                          |
-| Swagger   | http://localhost:8080/swagger-ui.html          |
+| Backend   | http://localhost:8082 (direto; o navegador usa /api em :3000) |
+| Swagger   | http://localhost:8082/swagger-ui.html (exige login de gerente) |
 | MySQL     | `localhost:3307` (user `root` / senha `admin123`) |
 
 Serviços definidos em [`docker-compose.yml`](docker-compose.yml):
@@ -130,7 +130,7 @@ Scripts em `frontend-repo/js/`: `api-service.js` (integração com a API),
 `app.js` (utilidades gerais), `dashboard.js`, `clientes.js`, `vendas.js`,
 `pagamentos.js`, `relatorios.js`, `notificacoes.js`, `notificacoes-global.js`.
 
-Base: `http://localhost:8080`
+Base: `http://localhost:8082`
 
 ### Clientes — `/api/clientes`
 - `GET /` · `POST /` · `GET /{id}` · `PUT /{id}` · `DELETE /{id}`
@@ -179,15 +179,15 @@ docker-compose down && docker-compose up -d --build
 ```
 
 ### Frontend não carrega dados
-1. Verifique se a API responde: `http://localhost:8080/api/clientes`.
-2. Console do navegador (F12) → procure por erros de CORS ou `Failed to fetch`.
-3. Confirme que as requisições vão para `http://localhost:8080/api`.
+1. Verifique se a API responde: `http://localhost:8082/api/auth/csrf` (a maioria das rotas exige login).
+2. Console do navegador (F12) → procure por erros ou `Failed to fetch`.
+3. Pelo Docker, as requisições do navegador vão para `/api` na própria origem (`http://localhost:3000/api`), nunca direto ao backend.
 
-Base: `http://localhost:8080`
+Base: `http://localhost:8082`
 
 3. **Endereço do backend:**
-   - O front usa `http://localhost:8080` por padrão
-   - Para outro endereço, faça o build com `--dart-define=API_URL=http://host:porta`
+   - Por padrão o front usa caminho relativo (`/api`), servido pelo nginx na mesma origem
+   - Só para `flutter run` fora do Docker: `--dart-define=API_URL=http://localhost:8082`
 
 ### Vendas — `/api/vendas`
 - `GET /` · `POST /` · `GET /{id}` · `PUT /{id}` · `DELETE /{id}`
