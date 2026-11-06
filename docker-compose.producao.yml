@@ -1,0 +1,13 @@
+# Usar junto do Compose principal e de um .env de produção.
+services:
+  backend:
+    environment:
+      SPRING_PROFILES_ACTIVE: production
+    ports: !reset []
+  mysql:
+    ports: !reset []
+  frontend:
+    ports: !override ["80:80","443:443"]
+    volumes:
+      - ./frontend-repo/nginx.producao.conf:/etc/nginx/conf.d/default.conf:ro
+      - ${TLS_CERT_DIR:?Informe a pasta dos certificados}:/etc/nginx/certs:ro

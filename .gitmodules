@@ -1,6 +1,8 @@
 [submodule "frontend-repo"]
 	path = frontend-repo
 	url = https://github.com/Artur-Duarte17/Caderneta.git
+	branch = main
 [submodule "backend-repo"]
 	path = backend-repo
 	url = https://github.com/EduardoBR2003/api-caderneta.git
+	branch = main

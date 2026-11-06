@@ -1,230 +1,87 @@
-# Sistema de Caderneta - Vendas a Prazo
+# Caderneta — vendas a prazo
 
-Sistema completo para gerenciamento de vendas a prazo ("fiado"), com controle de
-clientes, dívidas, pagamentos, notificações e relatórios gerenciais.
+Integrador da API Spring Boot (backend-repo) e da interface Flutter Web (frontend-repo), mantidas como submódulos Git. A versão local usa MySQL e nginx.
 
-Este repositório é o **projeto integrador (guarda-chuva)**: reúne o backend e o
-frontend como **submódulos Git** e orquestra tudo via Docker Compose.
+A venda possui total financeiro próprio e itens opcionais. Itens não recalculam a dívida. A soma pode ser menor ou igual ao total; a diferença aparece como **Valor não detalhado**.
 
-## 🧩 Repositórios (submódulos)
+- [Contrato e permissões vigentes](docs/contratos-e-permissoes.md)
+- [Entrega e evidências de homologação](docs/entrega-homologacao-2026-11-05.md)
+- [Análise anterior e referências da biblioteca](docs/analise-biblioteca-pendencias-2026-11-05.md)
 
-| Submódulo        | Caminho          | Repositório                                         | Stack                         |
-|------------------|------------------|----------------------------------------------------|-------------------------------|
-| Backend (API)    | `backend-repo/`  | https://github.com/EduardoBR2003/api-caderneta     | Spring Boot 3 / Java 21 / MySQL |
-| Frontend (Web)   | `frontend-repo/` | https://github.com/Artur-Duarte17/Caderneta        | HTML / CSS / JS (Vanilla) + NGINX |
+## Ferramentas e preparação
 
-### Clonar o projeto com os submódulos
+Use JDK 21 e Maven 3.9.9 (imagem maven:3.9.9-eclipse-temurin-21), Flutter **3.47.6** / Dart 3.13.5 e Docker Compose com suporte a !reset e !override. O frontend tem pubspec.lock e .fvmrc; a compilação não deve atualizar dependências automaticamente.
 
-```bash
-git clone --recurse-submodules <url-deste-repo>
-# ou, se já clonou sem os submódulos:
-git submodule update --init --recursive
-```
+Copie .env.example para .env e gere três senhas diferentes, alfanuméricas, com no mínimo 32 caracteres. Não versione .env, dumps, contas de homologação ou certificados. Para a primeira instalação, preencha os dados do gerente de bootstrap com CPF válido. Em bases existentes, mantenha as contas já registradas. O usuário caderneta_app recebe DML; caderneta_migracao recebe os privilégios necessários às migrations. Nenhum datasource da aplicação usa root.
 
-### Atualizar os submódulos para a última versão das branches remotas
+O script abaixo testa e empacota usando banco **isolado**. Ele gera .env.homologacao se necessário. Não substitui a revisão do histórico de uma base existente.
 
-```bash
-git submodule update --remote --merge
-```
+~~~powershell
+./scripts/Preparar-Entrega.ps1
+~~~
 
-## 🏗️ Arquitetura
+O Dockerfile do frontend consome build/web já validado pelo script. O Dockerfile.local do backend consome o JAR validado. Para build independente da API, o Dockerfile normal também compila com Maven/JDK 21.
 
-- **Backend**: Spring Boot (Java) com MySQL
-- **Frontend**: Flutter Web
-- **API**: RESTful com documentação Swagger
+## Ambiente local HTTP
 
-## 🚀 Como Executar
+~~~powershell
+docker compose up -d --build
+~~~
 
-### Pré-requisitos
+| Serviço | Endereço |
+|---|---|
+| Aplicação | http://localhost:3000 |
+| API direta | http://localhost:8082/api/saude |
+| MySQL local | 127.0.0.1:3307 |
 
-- Docker
-- Docker Compose
+As portas locais são publicadas somente em loopback. O navegador utiliza /api na mesma origem do frontend. O perfil dev permite cookie em HTTP; fora dele, o cookie exige HTTPS. O backend aguarda o banco e o frontend aguarda a prontidão da API. Logs operacionais: docker compose logs --tail=100 backend.
 
-### Executar com Docker (recomendado)
+Para atualizar o ambiente existente **após** homologação, restauração de backup e preparação dos artefatos:
 
-```bash
-docker-compose up -d --build
-```
+~~~powershell
+./scripts/Atualizar-Local.ps1
+~~~
 
-**Acessos:**
+Esse script exige histórico reconciliado até V7/V8, verifica colisões normalizadas de CPF, faz backup, preserva as imagens anteriores, separa usuários de banco e troca as credenciais antes de recriar os containers. Compara contagens e impressões digitais financeiras. Não remove o volume mysql_data.
 
-| Serviço   | URL                                            |
-|-----------|------------------------------------------------|
-| Frontend  | http://localhost:3000                          |
-| Backend   | http://localhost:8082 (direto; o navegador usa /api em :3000) |
-| Swagger   | http://localhost:8082/swagger-ui.html (exige login de gerente) |
-| MySQL     | `localhost:3307` (user `root` / senha `admin123`) |
+## Homologação isolada
 
-Serviços definidos em [`docker-compose.yml`](docker-compose.yml):
-`mysql` → `backend` (aguarda o healthcheck do MySQL) → `frontend`.
+~~~powershell
+./scripts/Preparar-Homologacao.ps1
+docker compose --env-file .env.homologacao -f docker-compose.homologacao.yml -p caderneta-homologacao up -d --build
+node scripts/testar-homologacao.mjs
+node scripts/testar-financeiro.mjs
+~~~
 
-### Executar manualmente (desenvolvimento)
+API :18082, frontend :13000, volume homologacao_mysql. O primeiro teste exige instalação vazia e cria dados sintéticos exclusivamente nesse ambiente. Para repetir sem apagar dados de teste, use CADERNETA_REPETIR=1; essa opção apenas dispensa a asserção de instalação inicialmente vazia. Os cenários financeiros criam temporariamente um trigger de falha no banco isolado para provar rollback.
 
-**Pré-requisitos adicionais:** Java 21+, Maven 3.6+, MySQL 8.0+.
+## Migrations e dados existentes
 
-**3. Frontend:**
-```bash
-cd frontend-repo
-flutter pub get
-flutter run -d chrome
-```
+B7 é uma baseline cumulativa **sem demonstrações** para instalações novas; V8 acrescenta versão, operador, idempotência, unicidade normalizada de CPF e índices. V1–V7 permanecem intactas para não invalidar checksums de instalações existentes. Hibernate apenas valida o esquema.
 
-## 📋 Funcionalidades
+Não aplique V2–V4 antigas pendentes em base de uso corrente: contêm cargas/destruições históricas. Restaure primeiro um dump em outro banco e reconcilie seu histórico. Colisões antigas de CPF impedem V8 e precisam de análise explícita; não são renumeradas nem mescladas automaticamente. CPFs históricos inválidos também são relatados, sem fabricação de identidade.
 
-### Frontend (páginas)
+Fixtures são exclusivas do perfil dev-fixtures e identificam pessoas por CPF/login. A exceção Flyway repeatable:missing é exclusiva de dev; produção exige histórico compatível. Não habilite fixtures em uma base com dados reais.
 
-| Página        | Arquivo                       | Descrição |
-|---------------|-------------------------------|-----------|
-| Visão Geral   | `index.html`                  | Dashboard com métricas, vendas recentes e clientes em atraso |
-| Clientes      | `Paginas/clientes.html`       | CRUD de clientes, limite de crédito, prazo de pagamento e fiadores |
-| Vendas        | `Paginas/vendas.html`         | Registro de vendas com múltiplos itens, edição e filtros |
-| Pagamentos    | `Paginas/pagamentos.html`     | Gestão de cobranças e registro de pagamentos de dívidas |
-| Relatórios    | `Paginas/relatorios.html`     | Relatórios de vendas a prazo, débitos pendentes e pagamentos, com exportação CSV |
-| Notificações  | `Paginas/notificacoes.html`   | Timeline de eventos, filtros e marcação como lida |
+## Backup e recuperação
 
-Scripts em `frontend-repo/js/`: `api-service.js` (integração com a API),
-`app.js` (utilidades gerais), `dashboard.js`, `clientes.js`, `vendas.js`,
-`pagamentos.js`, `relatorios.js`, `notificacoes.js`, `notificacoes-global.js`.
+~~~powershell
+./scripts/Backup-Caderneta.ps1
+./scripts/Agendar-Backup.ps1
+~~~
 
-### Backend (domínio)
+Backups padrão em C:/Dev/Backups/Caderneta/diarios, com SHA-256 e retenção inicial de 30 dias. A tarefa Windows executa às 03h e tenta recuperar execuções perdidas quando disponível. Depende do Windows, da sessão configurada e do Docker Desktop em funcionamento.
 
-Entidades JPA: `Pessoa` (base), `Cliente`, `Funcionario`, `Proprietario`,
-`Fiador`, `Venda`, `ItemVenda`, `Divida`, `Pagamento`, `Notificacao`.
+Restauração: mantenha o dump original, restaure em **outro banco/volume isolado**, confira o histórico Flyway e inicie a mesma imagem da API apontando para esse banco. Verifique prontidão, login, IDs, contagens e saldos. Somente depois planeje a recuperação da base de uso corrente. Nunca execute down -v como procedimento de atualização.
 
-Enums: `StatusDivida` (ABERTA, PAGA_PARCIALMENTE, PAGA_TOTALMENTE, VENCIDA),
-`MetodoPagamento` (DINHEIRO, CARTAO_CREDITO, CARTAO_DEBITO, PIX, BOLETO_BANCARIO),
-`TipoNotificacao` (LEMBRETE_PAGAMENTO, AVISO_DIVIDA_VENCIDA, CONFIRMACAO_COMPRA,
-CONFIRMACAO_PAGAMENTO, CADASTRO_CLIENTE, PAGAMENTO_RECEBIDO, COMPRA_REALIZADA).
+Imagens anteriores desta entrega: caderneta-backend:antes-20261105 e caderneta-frontend:antes-20261105. V8 é aditiva; não tente desfazê-la apagando colunas ou histórico. Em falha, interrompa novas escritas, preserve os logs e use as imagens/configuração preservadas ou uma restauração previamente verificada.
 
-Regras de negócio: geração automática de dívida a partir da venda, cálculo de
-`valorPendente`, atualização de status da dívida ao registrar pagamentos e
-disparo de notificações em eventos (cadastro de cliente, venda, pagamento).
+## HTTPS separado
 
-## 🛠️ Estrutura do projeto
+docker-compose.producao.yml remove as portas diretas de API/MySQL e publica nginx em 80/443. Defina TLS_CERT_DIR com fullchain.pem e privkey.pem e use um .env próprio de produção. O nginx aplica TLS 1.2/1.3 e encaminha host/protocolo; os endpoints públicos de login e ativação têm limitação de tentativas.
 
-```
-Projeto_Final_Caderneta/
-├── backend-repo/           # API Spring Boot
-│   ├── src/main/java/
-│   │   └── br/com/api_caderneta/
-│   │       ├── controller/     # Controllers REST
-│   │       ├── service/        # Lógica de negócio
-│   │       ├── repository/     # Acesso a dados
-│   │       ├── model/          # Entidades JPA
-│   │       ├── dto/            # Data Transfer Objects
-│   │       └── config/         # Configurações
-│   └── src/main/resources/
-│       ├── application.yml     # Configurações da aplicação
-│       └── db/migration/       # Scripts Flyway
-├── frontend-repo/          # Interface web (Flutter Web)
-│   ├── lib/
-│   │   ├── core/              # API, modelos, tema, formatação
-│   │   ├── widgets/           # Layout e componentes compartilhados
-│   │   └── pages/             # Telas do sistema
-│   ├── web/                   # index.html e ícones
-│   └── Dockerfile             # Build Flutter + NGINX
-└── docker-compose.yml     # Orquestração Docker
-```
+A configuração HTTPS foi validada localmente. Domínio, certificado público e publicação externa não fazem parte desta entrega.
 
-Scripts em `frontend-repo/js/`: `api-service.js` (integração com a API),
-`app.js` (utilidades gerais), `dashboard.js`, `clientes.js`, `vendas.js`,
-`pagamentos.js`, `relatorios.js`, `notificacoes.js`, `notificacoes-global.js`.
+## Escopo adiado
 
-Base: `http://localhost:8082`
-
-### Clientes — `/api/clientes`
-- `GET /` · `POST /` · `GET /{id}` · `PUT /{id}` · `DELETE /{id}`
-- `PATCH /{id}/limite-credito`
-- `PATCH /{id}/prazo-pagamento`
-
-### Vendas — `/api/vendas`
-- `GET /` · `POST /` · `GET /{id}` · `PUT /{id}` · `DELETE /{id}`
-
-### Dívidas — `/api/dividas`
-- `GET /` · `GET /{id}` · `GET /cliente/{clienteId}`
-- `POST /{dividaId}/pagamentos` — registrar pagamento
-- `PUT /{id}` · `DELETE /{id}`
-
-### Fiadores — `/api/fiadores`
-- `GET /` · `GET /{id}` · `POST /`
-- `POST /associar/cliente/{clienteId}/fiador/{fiadorId}`
-
-### Funcionários — `/api/funcionarios`
-- `GET /` · `POST /` · `GET /{id}` · `PUT /{id}` · `DELETE /{id}`
-
-### Proprietários — `/api/v1/proprietarios`
-- `GET /` · `POST /` · `GET /{id}` · `PUT /{id}` · `DELETE /{id}`
-
-### Notificações — `/api/notificacoes`
-- `GET /` · `GET /cliente/{clienteId}`
-- `POST /manual` — criar notificação manual
-- `PATCH /{id}/marcar-lida`
-- `PATCH /marcar-todas-lidas`
-
-### Relatórios — `/api/relatorios`
-- `GET /vendas-a-prazo?dataInicio=AAAA-MM-DD&dataFim=AAAA-MM-DD`
-- `GET /debitos-pendentes?dataInicio=...&dataFim=...` (filtro opcional por status)
-- `GET /pagamentos?inicio=AAAA-MM-DD&fim=AAAA-MM-DD` — dados para gráficos
-
-> A referência completa e testável está no Swagger UI.
-
-## 🐛 Solução de problemas
-
-### Sistema não inicia
-```bash
-docker-compose ps
-docker-compose logs backend
-docker-compose logs mysql
-docker-compose down && docker-compose up -d --build
-```
-
-### Frontend não carrega dados
-1. Verifique se a API responde: `http://localhost:8082/api/auth/csrf` (a maioria das rotas exige login).
-2. Console do navegador (F12) → procure por erros ou `Failed to fetch`.
-3. Pelo Docker, as requisições do navegador vão para `/api` na própria origem (`http://localhost:3000/api`), nunca direto ao backend.
-
-Base: `http://localhost:8082`
-
-3. **Endereço do backend:**
-   - Por padrão o front usa caminho relativo (`/api`), servido pelo nginx na mesma origem
-   - Só para `flutter run` fora do Docker: `--dart-define=API_URL=http://localhost:8082`
-
-### Vendas — `/api/vendas`
-- `GET /` · `POST /` · `GET /{id}` · `PUT /{id}` · `DELETE /{id}`
-
-### Dívidas — `/api/dividas`
-- `GET /` · `GET /{id}` · `GET /cliente/{clienteId}`
-- `POST /{dividaId}/pagamentos` — registrar pagamento
-- `PUT /{id}` · `DELETE /{id}`
-
-### Problemas de CORS
-- Configuração em `backend-repo/.../config/CorsConfig.java`
-  (libera `http://localhost:3000`). Adicione outras origens se necessário.
-
-### Banco / migrations
-- Migrations ficam em `backend-repo/src/main/resources/db/migration`.
-- `spring.flyway.baseline-on-migrate=true` está habilitado.
-- Para recriar do zero: `docker-compose down -v` (remove o volume `mysql_data`).
-
-## 🎯 Status do projeto
-
-🚧 **Em desenvolvimento** — funcionalidades principais implementadas e integradas.
-
-| Módulo         | Status |
-|----------------|--------|
-| Backend API    | ✅ Endpoints REST implementados |
-| Clientes       | ✅ CRUD completo (limites, prazos, fiadores) |
-| Dashboard      | ✅ Métricas e vendas recentes |
-| Vendas         | ⚠️ Listagem e registro OK; edição/detalhes em ajuste |
-| Dívidas        | ✅ CRUD e pagamentos; cálculo de `valorPendente` |
-| Pagamentos     | ✅ Registro integrado com atualização de status |
-| Relatórios     | ✅ Vendas, débitos e pagamentos com exportação CSV |
-| Notificações   | ✅ Eventos em tempo real e marcação de leitura |
-| Infra          | ✅ Docker, Flyway, CORS |
-
-### Próximas implementações
-- Corrigir bugs remanescentes nas vendas (valores `NaN`, descrição `undefined`).
-- Persistência/agendamento de notificações; envio por e-mail/SMS.
-- Paginação, ordenação e filtros mais granulares nas listagens.
-- Relatórios em PDF e dashboard com gráficos avançados.
-- Autenticação e permissões por usuário.
+Offline, conta própria do fiador, bot com envio real, pagamentos online, estorno e recuperação de senha. Não há commit ou push automático.

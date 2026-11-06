@@ -1,5 +1,7 @@
 # Backend: sessão, contas, histórico e auditoria
 
+> Registro histórico da integração anterior. O contrato e os resultados atuais estão em [contratos e permissões](contratos-e-permissoes.md) e [entrega homologada](entrega-homologacao-2026-11-05.md). Funcionário agora edita suas próprias vendas, itens são opcionais e as credenciais são externas.
+
 Implementa a seção 10 do plano compartilhado. Estado verificado em 05/11/2026. Sem commit.
 
 ## 1. O que foi feito
@@ -60,16 +62,9 @@ Implementa a seção 10 do plano compartilhado. Estado verificado em 05/11/2026.
 
 ## 5. Fixtures de desenvolvimento (somente perfil `dev-fixtures`)
 
-Contas fictícias, com senhas apenas de desenvolvimento:
+As contas fictícias antigas foram preservadas somente na base local existente. Suas credenciais não integram a configuração de entrega; use os segredos do ambiente e um gerente de bootstrap em instalações novas.
 
-| Login | Senha | Perfil |
-|---|---|---|
-| `dev.gerente` | `DevGerente#2026` | GERENTE |
-| `dev.funcionario` | `DevFunc#2026` | FUNCIONARIO |
-| `dev.cliente1` (João Silva) | `DevCliente1#2026` | CLIENTE |
-| `dev.cliente2` (Mariana Oliveira) | `DevCliente2#2026` | CLIENTE |
-
-O Compose ativa `dev,dev-fixtures` por padrão. **Para produção, mude `SPRING_PROFILES_ACTIVE`**: o padrão sem perfil usa cookie `Secure` e não carrega fixtures.
+O Compose atual ativa somente `dev`; `dev-fixtures` exige escolha explícita. **Para produção, mude `SPRING_PROFILES_ACTIVE`**: o padrão sem perfil usa cookie `Secure` e não carrega fixtures.
 
 ## 6. Verificação
 
