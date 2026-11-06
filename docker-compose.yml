@@ -20,7 +20,7 @@ services:
   backend:
     build: ./backend-repo # Caminho para a pasta do projeto Spring Boot com o Dockerfile
     ports:
-      - "127.0.0.1:8080:8080" # só a própria máquina; o navegador usa /api pelo nginx (porta 3000)
+      - "127.0.0.1:8082:8080" # só a própria máquina (porta 8082 no host, como definido pelo Eduardo); o navegador usa /api pelo nginx (porta 3000)
     environment:
       # Perfil padrão VAZIO = seguro (cookie Secure, sem fixtures). Para testar em HTTP local, crie um
       # arquivo .env (ignorado pelo git) com SPRING_PROFILES_ACTIVE=dev,dev-fixtures. Ver .env.example.
