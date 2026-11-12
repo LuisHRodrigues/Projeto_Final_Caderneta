@@ -1,0 +1,42 @@
+services:
+  mysql:
+    image: mysql@sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?}
+      MYSQL_DATABASE: api_caderneta_database
+      CADERNETA_DB_PASSWORD: ${CADERNETA_DB_PASSWORD:?}
+      CADERNETA_MIGRATION_PASSWORD: ${CADERNETA_MIGRATION_PASSWORD:?}
+    volumes:
+      - homologacao_mysql:/var/lib/mysql
+      - ./scripts/init-users.sh:/docker-entrypoint-initdb.d/01-users.sh:ro
+    healthcheck:
+      test: ["CMD","mysqladmin","ping","-h","localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  backend:
+    image: caderneta-backend:homologacao
+    build:
+      context: ./backend-repo
+      dockerfile: Dockerfile.local
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${HOMOLOG_DATABASE:-api_caderneta_database}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      CADERNETA_DB_PASSWORD: ${CADERNETA_DB_PASSWORD:?}
+      CADERNETA_MIGRATION_PASSWORD: ${CADERNETA_MIGRATION_PASSWORD:?}
+      CADERNETA_BOOTSTRAP_LOGIN: ${CADERNETA_BOOTSTRAP_LOGIN:?}
+      CADERNETA_BOOTSTRAP_SENHA: ${CADERNETA_BOOTSTRAP_SENHA:?}
+      CADERNETA_BOOTSTRAP_CPF: ${CADERNETA_BOOTSTRAP_CPF:?}
+    ports: ["127.0.0.1:18082:8080"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+  frontend:
+    image: caderneta-frontend:homologacao
+    build:
+      context: ./frontend-repo
+      dockerfile: Dockerfile.local
+    ports: ["127.0.0.1:13000:80"]
+    depends_on: [backend]
+volumes:
+  homologacao_mysql:

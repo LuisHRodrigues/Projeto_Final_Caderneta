@@ -1,5 +1,7 @@
 # Plano completo de execução da Caderneta
 
+> Documento histórico, substituído pelo plano integral aprovado no chat em 05/11/2026. A execução passou a abranger backend, frontend, banco e ambiente local. Funcionário edita somente suas próprias vendas; itens são opcionais. Consulte [contratos vigentes](contratos-e-permissoes.md) e [entrega](entrega-homologacao-2026-11-05.md). As instruções de divisão de trabalho abaixo não regem a execução atual.
+
 Atualizado em 05/11/2026. Instrução para o Codex integrado ao VS Code e referência compartilhada com o responsável pelo backend.
 
 ## 1. Pedido e modo de trabalho

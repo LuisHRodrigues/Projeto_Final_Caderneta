@@ -26,3 +26,9 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+.env.*
+!.env.example
+.homologacao/
+
+.playwright-cli/
+output/playwright/
