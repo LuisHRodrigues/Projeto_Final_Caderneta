@@ -31,4 +31,4 @@ Thumbs.db
 .homologacao/
 
 .playwright-cli/
-output/playwright/
+output/
