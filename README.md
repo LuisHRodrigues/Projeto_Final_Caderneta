@@ -10,8 +10,8 @@ frontend como **submódulos Git** e orquestra tudo via Docker Compose.
 
 | Submódulo        | Caminho          | Repositório                                         | Stack                         |
 |------------------|------------------|----------------------------------------------------|-------------------------------|
-| Backend (API)    | `backend-repo/`  | https://github.com/EduardoBR2003/api-caderneta     | Spring Boot 3 / Java 21 / MySQL |
-| Frontend (Web)   | `frontend-repo/` | https://github.com/Artur-Duarte17/Caderneta        | HTML / CSS / JS (Vanilla) + NGINX |
+| Backend (API)    | `backend-repo/`  | https://github.com/EduardoBR2003/api-caderneta     | Spring Boot 4.1 / Java 21 / MySQL 8.4 (compatível com TiDB) |
+| Frontend (Web)   | `frontend-repo/` | https://github.com/Artur-Duarte17/Caderneta        | Flutter Web 3.47.9 + NGINX (local) / Firebase Hosting |
 
 ### Clonar o projeto com os submódulos
 
@@ -37,14 +37,16 @@ git submodule update --remote --merge
 
 ### Pré-requisitos
 
-- Docker
-- Docker Compose
+- Docker com Compose v2
+- Flutter 3.47.9 (só para `./subir.sh` ou desenvolvimento do frontend)
 
 ### Executar com Docker (recomendado)
 
-```bash
-docker-compose up -d --build
-```
+1. `cp .env.example .env` e preencha as **três senhas** (não há senha padrão; o compose não sobe sem elas).
+2. `docker compose up -d --build`
+
+Detalhes (primeiro gerente, HTTP local, dados fictícios, volume antigo do MySQL 8.0, testes):
+[`docs/operacao-local.md`](docs/operacao-local.md). Variáveis: [`docs/variaveis-de-ambiente.md`](docs/variaveis-de-ambiente.md).
 
 **Acessos:**
 
@@ -53,14 +55,14 @@ docker-compose up -d --build
 | Frontend  | http://localhost:3000                          |
 | Backend   | http://localhost:8082 (direto; o navegador usa /api em :3000) |
 | Swagger   | http://localhost:8082/swagger-ui.html (exige login de gerente) |
-| MySQL     | `localhost:3307` (user `root` / senha `admin123`) |
+| MySQL     | `localhost:3307` (usuários e senhas definidos no seu `.env`) |
 
 Serviços definidos em [`docker-compose.yml`](docker-compose.yml):
-`mysql` → `backend` (aguarda o healthcheck do MySQL) → `frontend`.
+`mysql` → `migracao` (aplica as migrations e termina) → `backend` (usuário só de DML) → `frontend`.
 
 ### Executar manualmente (desenvolvimento)
 
-**Pré-requisitos adicionais:** Java 21+, Maven 3.6+, MySQL 8.0+.
+**Pré-requisitos adicionais:** Java 21+, Maven 3.9+, MySQL 8.4+.
 
 **3. Frontend:**
 ```bash
