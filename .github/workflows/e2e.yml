@@ -1,0 +1,54 @@
+# Integração completa no navegador: compose (MySQL 8.4 -> migracao -> API -> nginx/Flutter) + Playwright
+# (Chromium) + carga curta (k6). Senhas geradas a cada execução; nada fixo no repositório.
+name: e2e
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Ambiente descartável (.env com senhas aleatórias, configuração de produção)
+        run: |
+          umask 077
+          {
+            echo "MYSQL_ROOT_PASSWORD=$(openssl rand -hex 16)"
+            echo "CADERNETA_DB_PASSWORD=$(openssl rand -hex 16)"
+            echo "CADERNETA_MIGRATION_PASSWORD=$(openssl rand -hex 16)"
+            echo "CADERNETA_BOOTSTRAP_LOGIN=gerente.e2e"
+            echo "CADERNETA_BOOTSTRAP_SENHA=$(openssl rand -hex 12)"
+            echo "CADERNETA_BOOTSTRAP_CPF=52998224725"
+            echo "CADERNETA_SESSAO_COOKIE=__session"
+          } > .env
+      - name: Subir a pilha
+        run: |
+          docker compose up -d --build
+          curl -fsS --retry 60 --retry-all-errors --retry-delay 3 http://localhost:3000/api/saude
+      - name: Playwright (Chromium)
+        run: |
+          set -a; . ./.env; set +a
+          docker run --rm --network host -e E2E_LOGIN="$CADERNETA_BOOTSTRAP_LOGIN" -e E2E_SENHA="$CADERNETA_BOOTSTRAP_SENHA" \
+            -v "$PWD/e2e:/e2e" -w /e2e mcr.microsoft.com/playwright:v1.64.1-noble \
+            bash -c 'npm install --no-audit --no-fund && npx playwright test'
+      - name: Carga curta (k6)
+        run: |
+          set -a; . ./.env; set +a
+          docker run --rm --network host -v "$PWD/e2e/carga:/s" grafana/k6:1.3.0 run -q \
+            -e DURACAO=20s -e LOGIN="$CADERNETA_BOOTSTRAP_LOGIN" -e SENHA="$CADERNETA_BOOTSTRAP_SENHA" /s/leitura.js
+      - name: Logs em caso de falha
+        if: failure()
+        run: docker compose logs --no-color --tail 200
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright
+          path: e2e/test-results/

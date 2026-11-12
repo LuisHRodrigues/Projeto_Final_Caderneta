@@ -1,0 +1,11 @@
+{
+  "name": "caderneta-e2e",
+  "private": true,
+  "description": "Testes ponta a ponta no navegador: Flutter Web -> nginx/Firebase -> API -> banco.",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}
