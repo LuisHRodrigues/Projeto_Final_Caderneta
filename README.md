@@ -222,9 +222,12 @@ mínimo é 0 instâncias). Todos os indicadores de carregamento cobrem essa espe
   `caderneta-migracao` → publicar `caderneta-api` e atualizar `caderneta-lembretes` → publicar o site
   (`firebase deploy --only hosting --project caderneta01`) → verificar `/api/saude`, rotas e logs.
 - **Voltar uma versão:** Cloud Run (revisão anterior) e Firebase Hosting (histórico de versões).
-- **CI/CD:** os workflows dos submódulos testam em todo push/PR; a implantação por eles é manual
-  (`workflow_dispatch`) com Workload Identity Federation — a configuração no GitHub ainda não foi
-  concluída, por isso as publicações atuais são feitas pelo terminal.
+- **CI/CD (deploy automático):** cada push na `main` da API ou do frontend roda os testes e, se tudo
+  passar, **publica sozinho** (API no Cloud Run; site no Firebase Hosting), por Workload Identity
+  Federation — sem chave JSON nem senha no GitHub; o provedor só aceita os dois repositórios na
+  `main`, e cada um usa uma conta com permissão mínima (`github-deployer`, `github-hosting`).
+  **Migrations novas** param o deploy automático da API: faça o backup e rode o workflow manualmente
+  marcando `confirmo_migracao`.
 - **Submódulos:** depois de publicar uma versão nova da API ou do frontend na `main`, atualize o
   ponteiro aqui (`git add backend-repo frontend-repo`).
 
@@ -281,7 +284,6 @@ Documentos principais em [`docs/`](docs/): [operação local](docs/operacao-loca
   pago).
 - Renomear a loja e administração da plataforma (listar/desativar lojas).
 - Validação do formato do telefone também na API.
-- Concluir o Workload Identity Federation para publicar pelo GitHub Actions.
 - Domínio próprio no Firebase Hosting (certificado HTTPS gratuito).
 
 ---
