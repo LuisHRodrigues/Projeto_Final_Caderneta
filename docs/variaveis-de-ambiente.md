@@ -23,6 +23,7 @@ Flutter Web (tudo que é compilado para o navegador é público).
 | `CADERNETA_LOGIN_MAX_FALHAS` | não | `5` | API | Falhas por login dentro da janela antes do bloqueio. |
 | `CADERNETA_LOGIN_MAX_FALHAS_IP` | não | `30` | API | Falhas por IP (o IP atrás de proxy pode ser forjado; o limite por login é o principal). |
 | `CADERNETA_LOGIN_JANELA` / `CADERNETA_LOGIN_BLOQUEIO` | não | `15m` / `15m` | API | Formato de duração do Spring (`15m`, `1h`). |
+| `CADERNETA_CADASTRO_LOJA_MAX_POR_IP` | não | `5` | API | Cadastros de loja ("Criar minha loja") por IP dentro da janela de `CADERNETA_LOGIN_JANELA`. **Numa sala de aula todos saem pelo mesmo IP**: aumente no dia do treinamento. |
 | `CADERNETA_BOOTSTRAP_LOGIN` / `_SENHA` / `_NOME` / `_CPF` | **senha sim** | vazio | **só na tarefa `migracao`**, uma vez | Cria o primeiro gerente se não houver gerente ativo. Depois de criado, **remova** as variáveis e o segredo. |
 | `PORT` | não | `8080` | API | Injetada pelo Cloud Run. |
 
