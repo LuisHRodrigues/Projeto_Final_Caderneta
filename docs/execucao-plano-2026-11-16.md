@@ -4,6 +4,8 @@ Revisão 1.2 — 16/11/2026, com verificações finais em 17/11 UTC (16/11 em Br
 
 Base: integrador `a1ffa3b`, backend `7df1b22`, frontend `e45626f`. O [plano consolidado](planejamento-consolidado-2026-11-16.md) reúne a conversa, a Biblioteca de Software e as decisões do usuário. Os requisitos implementados estão na [especificação](especificacao-requisitos-software.md); contratos, em [permissões e API](contratos-e-permissoes.md).
 
+Etapa posterior: [refatoração geral com SOLID](refatoracao-solid-2026-11-16.md). As contagens e os caminhos de código neste relatório representam o checkpoint funcional anterior à refatoração; o novo relatório registra a organização e os testes posteriores.
+
 ## Comportamento implementado
 
 | Área | Resultado |

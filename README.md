@@ -13,6 +13,8 @@ operação.
 
 Evolução local de 16/11 (ainda não publicada): [execução e testes do plano consolidado](docs/execucao-plano-2026-11-16.md), [requisitos](docs/especificacao-requisitos-software.md) e [SMTP/transição da V13](docs/email-e-publicacao-v13.md). A confirmação de e-mail exige configurar o envio antes de implantar.
 
+Após o registro da entrega em commits locais, o backend e o frontend passaram por [refatoração de responsabilidades e dependências com SOLID](docs/refatoracao-solid-2026-11-16.md), com contratos preservados e nova validação. O relatório identifica os commits locais da entrega funcional e da refatoração, sem publicação.
+
 | Submódulo | Pasta | Repositório | Tecnologia |
 |---|---|---|---|
 | **API** | [`backend-repo/`](backend-repo/) | [EduardoBR2003/api-caderneta](https://github.com/EduardoBR2003/api-caderneta) | Java 21 · Spring Boot 4.1 · Hibernate 7 · Flyway · MySQL 8.4 / TiDB |
