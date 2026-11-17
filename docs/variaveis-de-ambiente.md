@@ -26,6 +26,11 @@ Flutter Web (tudo que é compilado para o navegador é público).
 | `CADERNETA_CADASTRO_LOJA_MAX_POR_IP` | não | `5` | API | Cadastros de loja ("Criar minha loja") por IP dentro da janela de `CADERNETA_LOGIN_JANELA`. **Numa sala de aula todos saem pelo mesmo IP**: aumente no dia do treinamento. |
 | `CADERNETA_BOOTSTRAP_LOGIN` / `_SENHA` / `_NOME` / `_CPF` | **senha sim** | vazio | **só na tarefa `migracao`**, uma vez | Cria o primeiro gerente se não houver gerente ativo. Depois de criado, **remova** as variáveis e o segredo. |
 | `PORT` | não | `8080` | API | Injetada pelo Cloud Run. |
+| `CADERNETA_URL_PUBLICA` | não | `http://localhost:3000` | API | URL pública do frontend usada no link de confirmação; HTTPS em produção. |
+| `CADERNETA_SMTP_HOST` / `_PORT` | não | vazio / `587` | API | Host e porta do provedor de e-mail; sem host, a confirmação permanece pendente. |
+| `CADERNETA_SMTP_USUARIO` / `_SENHA` | **senha sim** | vazio | API | Credenciais do provedor; senha no Secret Manager. |
+| `CADERNETA_SMTP_REMETENTE` | não | vazio | API | Remetente autorizado pelo provedor. |
+| `CADERNETA_SMTP_STARTTLS` | não | `true` | API | Manter `true` em produção; `false` apenas no SMTP local de teste. |
 
 Memória da JVM: a imagem define `JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError"`.
 Testado com limite de 512 MiB (carga de 20 usuários simultâneos: 389 MiB usados, sem erro).

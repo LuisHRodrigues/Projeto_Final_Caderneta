@@ -52,7 +52,15 @@ O navegador preserva a chave da solicitação incerta em armazenamento local, us
 
 ## Cadastro e fiador
 
-Funcionário cria cliente sem condições financeiras: limite inicial zero e prazo 30 dias. Campos de limite/prazo enviados por funcionário são recusados, tanto pelo PUT geral quanto pelos PATCH específicos.
+Funcionário cria cliente sem definir condições financeiras: o servidor aplica o limite padrão vigente da loja e prazo 30 dias. O padrão inicial da loja é zero. Campos de limite/prazo enviados por funcionário são recusados, tanto pelo PUT geral quanto pelos PATCH específicos. Alterar o padrão não modifica clientes existentes.
+
+### Estado do cliente e configuração da loja — V13
+
+`DELETE /api/clientes/{id}` passa a desativar o cadastro, sem apagar histórico; continua exclusivo do gerente. `PATCH /api/clientes/{id}/ativo` recebe `{ "ativo": true|false }`: gerente desativa ou reativa, funcionário apenas reativa. Cliente inativo continua consultável, mas cadastro, fiador associado, vendas, itens, vencimentos e recebimentos não podem ser alterados. A API confere o estado sob bloqueio transacional, inclusive nas chamadas diretas. Reativar preserva condições financeiras e é auditado.
+
+`GET /api/loja/configuracao` permite à equipe consultar o limite padrão; `PUT` é do gerente. `/api/catalogo` oferece itens frequentes por loja: equipe consulta ativos, gerente mantém descrição, preço sugerido opcional e estado. Seleção copia os valores para a venda; catálogo não controla estoque nem modifica vendas anteriores. Texto livre e venda só pelo total permanecem permitidos. A soma preenche o total apenas por ação explícita.
+
+E-mail comercial é obrigatório no cadastro da loja. Enquanto não confirmado, a API bloqueia a operação (`403`, código `EMAIL_PENDENTE`), preservando os endpoints necessários para autenticação, confirmação, reenvio e saída. `GET /api/auth/email`, `POST /api/auth/email/solicitar` (gerente) e `POST /api/auth/email/confirmar` (público com token) atendem esse fluxo. Token é armazenado como hash, expira em 24 horas, tem uso único e reenvio com intervalo mínimo de um minuto. Troca de endereço exige nova confirmação. Lojas existentes devem regularizar o contato; não recebem confirmação artificial. Configuração e transição: [guia da V13](email-e-publicacao-v13.md).
 
 CPF novo é validado/normalizado e possui unicidade normalizada no banco. Nomes só com espaços, precisão monetária inválida, prazo negativo ou acima do limite e crédito negativo são recusados.
 
