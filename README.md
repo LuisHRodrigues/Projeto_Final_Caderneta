@@ -7,6 +7,8 @@ os próprios clientes, vendas e funcionários.
 
 🌐 **Em produção:** https://caderneta01.web.app
 
+Atualização de 23/11: [correção do CI, validação e pendências de publicação](docs/validacao-ci-2026-11-23.md).
+
 Este é o **repositório integrador**: reúne a API e o frontend como **submódulos Git**, orquestra o
 ambiente local com Docker Compose e guarda os testes de navegador, de carga e a documentação de
 operação.
@@ -226,8 +228,10 @@ mínimo é 0 instâncias). Todos os indicadores de carregamento cobrem essa espe
   `caderneta-migracao` → publicar `caderneta-api` e atualizar `caderneta-lembretes` → publicar o site
   (`firebase deploy --only hosting --project caderneta01`) → verificar `/api/saude`, rotas e logs.
 - **Voltar uma versão:** Cloud Run (revisão anterior) e Firebase Hosting (histórico de versões).
-- **CI/CD (deploy automático):** cada push na `main` da API ou do frontend roda os testes e, se tudo
-  passar, **publica sozinho** (API no Cloud Run; site no Firebase Hosting), por Workload Identity
+- **CI/CD:** cada push na `main` da API ou do frontend roda os testes. A API mantém publicação
+  automática quando não há migrations novas. O frontend publica somente por execução manual
+  do workflow `frontend`, na `main`, marcando `confirmo_backend` depois de validar a API compatível.
+  Ambos usam Workload Identity
   Federation — sem chave JSON nem senha no GitHub; o provedor só aceita os dois repositórios na
   `main`, e cada um usa uma conta com permissão mínima (`github-deployer`, `github-hosting`).
   **Migrations novas** param o deploy automático da API: faça o backup e rode o workflow manualmente

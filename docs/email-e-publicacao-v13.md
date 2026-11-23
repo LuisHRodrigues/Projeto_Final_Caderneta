@@ -2,6 +2,22 @@
 
 Estado: instruções para a alteração local; não indica publicação realizada.
 
+## Preparação de 23/11/2026
+
+- Provedor escolhido: Zoho CPaaS/ZeptoMail via SMTP (`smtp.zeptomail.com`, porta 587, STARTTLS,
+  usuário `emailapikey`, remetente `avisos@caderneta.site`). O domínio apareceu verificado no painel.
+- Senha cadastrada pelo responsável no Secret Manager como `caderneta-smtp-senha`, versão 1.
+  Referência preparada no formulário do Cloud Run como `CADERNETA_SMTP_SENHA`; não foi publicada.
+- As seis variáveis SMTP/URL foram preparadas na interface; a revisão foi bloqueada por falta de
+  `artifactregistry.repositories.downloadArtifacts`. O formulário aberto não substitui configuração implantada.
+- A imagem de produção observada era `7df1b22`, anterior ao adaptador SMTP. O exemplo Java HTTP da Zoho
+  é uma alternativa de transporte; não é necessário adicioná-lo ao adaptador `EmailSmtp` existente.
+- O primeiro pipeline após o push parou antes da compilação por HTTP 429 do Maven Central.
+  CI e Docker passam a usar o mirror HTTPS do Central documentado pelo Google Cloud.
+- Enviar o frontend à `main` agora só testa e gera o build. Depois de publicar e validar a API,
+  executar manualmente `frontend`, na `main`, com `confirmo_backend`, para publicar o site.
+- Não foram enviados e-mails reais nem executadas migrations de produção nesta preparação.
+
 ## Configuração de envio
 
 A API usa um adaptador SMTP por meio do suporte de e-mail do Spring. As credenciais vêm do ambiente; nenhum provedor foi contratado ou configurado em produção nesta tarefa.
